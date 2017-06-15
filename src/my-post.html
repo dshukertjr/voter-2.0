@@ -1,0 +1,159 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-post">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 8px;
+        -webkit-animation: fadeIn 0.2s 1;
+        animation: fadeIn 0.2s 1;
+      }
+
+      a{
+        text-decoration:none;
+      }
+
+      #btnPost{
+        background:var(--app-primary-color);
+        color:#fff;
+      }
+
+      #cancel{
+        color:#000;
+      }
+    </style>
+
+    <firebase-auth 
+      app-name="drink"
+      id="auth" 
+      user="{{user}}" 
+      on-error="handleError">
+    </firebase-auth>
+
+    <firebase-query
+      app-name="drink"
+      id="query"
+      path="/questions"
+      limit-to-last="1">
+    </firebase-query>
+
+    <firebase-query
+      app-name="drink"
+      id="userQuery"
+      path="/users/[[user.uid]]">
+    </firebase-query>
+
+    <div class="card">
+      <h1>Post a question</h1>
+      <paper-textarea id="question" label="Question" placeholder="e.g. Warriors or Cavs?"></paper-textarea>
+
+      <paper-textarea id="choice1" class="choices" label="Choice 1" placeholder="e.g. Warriors!"></paper-textarea>
+
+      <paper-textarea id="choice2" class="choices" label="Choice 2" placeholder="e.g. Cavs!"></paper-textarea>
+
+      <paper-button id="reveal3" on-tap="reveal3"><iron-icon icon="my-icons:add" prefix></iron-icon>Add more</paper-button>
+      <paper-textarea id="choice3" class="choices" label="Choice 3" placeholder="e.g. Wait, I'm a Celtics fan!" hidden="true"></paper-textarea>
+
+      <paper-button id="reveal4" on-tap="reveal4" hidden="true"><iron-icon icon="my-icons:add" prefix></iron-icon>Add more</paper-button>
+      <paper-textarea id="choice4" class="choices" label="Choice 4" placeholder="e.g. Other" hidden="true"></paper-textarea>
+
+      <paper-button id="reveal5" on-tap="reveal5" hidden="true"><iron-icon icon="my-icons:add" prefix></iron-icon>Add more</paper-button>
+      <paper-textarea id="choice5" class="choices" label="Choice 5" placeholder="e.g. Not a fan of basket ball fan..." hidden="true"></paper-textarea>
+      <div class="buttons">
+        <a href="/"><paper-button on-tap="post" id="btnPost" raised>Post</paper-button></a>
+        <a href="/"><paper-button id="cancel">Cancel</paper-button></a>
+      </div>
+    </div>
+
+
+  </template>
+
+  <script>
+    class MyPost extends Polymer.Element {
+      static get is() { return 'my-post'; }
+
+      static get properties() {
+        return {
+          user: Object,
+          pageTitle: {
+            type: String,
+            value: 'Add New Question',
+            notify: true
+          }
+        };
+      }
+
+       post() {
+        var question = {
+          "meta": {
+            "Uid": this.user.uid,
+            "question": this.$.question.value,
+            "choice1": this.$.choice1.value,
+            "choice2": this.$.choice2.value
+          }
+        }
+        // if(this.$.afterMessage.value != null) data["afterMessage"] = this.$.afterMessage.value;
+        if(this.$.choice3.value != null) question["meta"]["choice3"] = this.$.choice3.value;
+        if(this.$.choice4.value != null) question["meta"]["choice4"] = this.$.choice4.value;
+        if(this.$.choice5.value != null) question["meta"]["choice5"] = this.$.choice5.value;
+
+        var query = this.$.query;
+        if(!this.user){
+          //if not signed in, sign in first
+          this.$.auth.signInAnonymously()
+          .then(function(response){
+            query.ref.push(question);
+          });
+        }else{
+          this.$.query.ref.push(question);
+        }
+
+
+        //emptying the text boxes
+        this.$.question.value = null;
+        // this.$.afterMessage.value = null;
+        this.$.choice1.value = null;
+        this.$.choice2.value = null;
+        this.$.choice3.value = null;
+        this.$.choice4.value = null;
+        this.$.choice5.value = null;
+      }
+
+      revealAfterMessage() {
+        this.$.revealAfterMessage.hidden = true;
+        this.$.afterMessage.hidden = false;
+      }
+
+      reveal3() {
+        //reveals the third choice input
+        this.$.choice3.hidden = false;
+        this.$.reveal4.hidden = false;
+        this.$.reveal3.hidden = true;
+      }
+
+        //reveals the fourth choice input
+      reveal4() {
+        this.$.choice4.hidden = false;
+        this.$.reveal5.hidden = false;
+        this.$.reveal4.hidden = true;
+      }
+
+        //reveals the fifth choice input
+      reveal5() {
+        this.$.choice5.hidden = false;
+        this.$.reveal5.hidden = true;
+      }
+
+
+    }
+
+    window.customElements.define(MyPost.is, MyPost);
+  </script>
+</dom-module>
