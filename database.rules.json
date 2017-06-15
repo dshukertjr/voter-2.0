@@ -1,0 +1,83 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        "public": {
+          ".read": "true",
+          ".write": "$uid === auth.uid"
+        },
+        "private": {//only allow users with coorporate true to read users' private information
+          ".read": "true",
+          ".write": "$uid === auth.uid"
+        }
+      }
+    },
+    "questions": {
+      ".read": "true",
+      "$qid": {
+        ".write": "!data.exists() && newData.child('meta').child('question').exists() && newData.child('meta').child('choice2').exists() && newData.child('meta').child('choice2').exists()",
+        "meta": {
+          ".write": "auth != null",
+          "question": {
+            ".validate": "newData.val().length > 0 && newData.isString()"
+          },
+          "choice1": {
+            ".validate": "newData.val().length > 0 && newData.isString()"
+          },
+          "choice2": {
+            ".validate": "newData.val().length > 0 && newData.isString()"
+          },
+          "choice3": {
+            ".validate": "newData.val().length > 0 && newData.isString()"
+          },
+          "choice4": {
+            ".validate": "newData.val().length > 0 && newData.isString()"
+          },
+          "choice5": {
+            ".validate": "newData.val().length > 0 && newData.isString()"
+          },
+          "Uid": {
+            ".validate": "newData.val() === auth.uid"
+          },
+          "$other": {
+            ".validate": "false"
+          }
+        },
+        "answers": {
+          "$uid": {
+            ".write": "auth != null && $uid === auth.uid && ( data.child('Uid').val() === auth.uid || !data.exists() )",
+            "choice": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": "false"
+            }
+          }
+        },
+        "comments": {
+          ".read": "auth != null",
+          "$cid": {
+            ".write": "auth != null",
+            "Uid": {
+              ".validate": "newData.val() === auth.uid"
+            },
+            "body": {
+              ".validate": "newData.isString()"
+            },
+            "$other": {
+              ".validate": "false"
+            }
+          }
+        },
+        "$other": {
+          ".validate": "false"
+        }
+      }
+    },
+    "$other": {
+      "$other": {
+        ".validate": "false"
+      }
+    }
+  }
+}
