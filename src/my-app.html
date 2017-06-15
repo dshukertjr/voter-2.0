@@ -1,13 +1,3 @@
-<!--
-@license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
@@ -20,34 +10,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth-script.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-database-script.html">
 <link rel="import" href="my-icons.html">
 
 <link rel="lazy-import" href="my-view1.html">
-<link rel="lazy-import" href="my-view2.html">
-<link rel="lazy-import" href="my-view3.html">
+<link rel="lazy-import" href="my-post.html">
+<link rel="lazy-import" href="my-questions.html">
+<link rel="lazy-import" href="my-question.html">
 <link rel="lazy-import" href="my-view404.html">
 
 <dom-module id="my-app">
   <template>
     <style>
       :host {
-        --app-primary-color: #4285f4;
+        --app-primary-color: #03A9F4;
         --app-secondary-color: black;
-
+        --header-image: none;
         display: block;
-      }
-
-      app-drawer-layout:not([narrow]) [drawer-toggle] {
-        display: none;
       }
 
       app-header {
         color: #fff;
         background-color: var(--app-primary-color);
+
+        --app-header-background-front-layer: {
+          background-position:center;
+          background-image: var(--header-image);
+        };
       }
 
       app-header paper-icon-button {
         --paper-icon-button-ink-color: white;
+      }
+
+      #mainTitle{
+        overflow:hidden;
+        text-overflow: ellipsis;
+        padding-right:16px;
+      }
+
+      #main-title-toolbar{
+        --app-toolbar-font-size: 32px;
       }
 
       .drawer-list {
@@ -66,7 +71,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         color: black;
         font-weight: bold;
       }
+
+      #backArrow{
+        color:#fff;
+      }
     </style>
+
+    <firebase-app 
+      name="drink"
+      auth-domain="drink-f8aff.firebaseapp.com" 
+      database-url="https://drink-f8aff.firebaseio.com" 
+      api-key="AIzaSyBzOoSEui2_rJSxLTSoYWcNpP2bUcO9bpY">
+    </firebase-app>
+
+    <firebase-auth 
+      app-name="drink"
+      id="auth" 
+      user="{{user}}" 
+      on-error="handleError">
+    </firebase-auth>
+
+    <firebase-document
+      app-name="drink"
+      id="userDocument"
+      path="/users/{{user.uid}}"
+      data="{{userMeta}}">
+    </firebase-document>
 
     <app-location route="{{route}}"></app-location>
     <app-route
@@ -78,22 +108,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <app-drawer-layout fullbleed>
       <!-- Drawer content -->
       <app-drawer id="drawer" slot="drawer">
-        <app-toolbar>Menu</app-toolbar>
+        <app-toolbar>
+          <iron-icon icon="custom-icons:nita-q"></iron-icon>
+          Voter
+        </app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="view1" href="view1">View One</a>
-          <a name="view2" href="view2">View Two</a>
-          <a name="view3" href="view3">View Three</a>
+          <a name="questions" href="/">Questions</a>
+          <a name="post" href="/post">Add New Question</a>
         </iron-selector>
       </app-drawer>
 
       <!-- Main content -->
-      <app-header-layout has-scrolling-region>
+      <app-header-layout id="appHeaderLayout" has-scrolling-region>
 
-        <app-header slot="header" condenses reveals effects="waterfall">
+        <app-header id="appHeader" slot="header" condenses reveals effects="waterfall">
           <app-toolbar>
-            <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
-            <div main-title>My App</div>
+            <a id="backArrow" hidden$="[[onMainPage]]" href="/"><paper-icon-button icon="my-icons:arrow-back"></paper-icon-button></a>
+            <div hidden$="[[!onMainPage]]"><paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button></div>
+            <div id="mainTitle" condensed-title$="[[isCoorporate]]" main-title$="[[!isCoorporate]]">[[pageTitle]]</div>
+            <div hidden$="[[!user]]">Guest [[answerCount]]</div>
           </app-toolbar>
+
+          <template is="dom-if" if="[[isCoorporate]]">
+            <app-toolbar id="main-title-toolbar">
+              <div main-title>[[pageTitle]]</div>
+            </app-toolbar>
+          </template>
+
         </app-header>
 
         <iron-pages
@@ -101,9 +142,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             attr-for-selected="name"
             fallback-selection="view404"
             role="main">
-          <my-view1 name="view1"></my-view1>
-          <my-view2 name="view2"></my-view2>
-          <my-view3 name="view3"></my-view3>
+          <my-questions id="myQuestions" page-title="{{pageTitle}}" question-num="15" name="questions"></my-questions>
+          <my-post name="post" page-title="{{pageTitle}}"></my-post>
+          <my-question name="question" page-title="{{pageTitle}}" route="{{subroute}}"></my-question>
           <my-view404 name="view404"></my-view404>
         </iron-pages>
       </app-header-layout>
@@ -125,6 +166,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           rootPattern: String,
           routeData: Object,
           subroute: String,
+          pageTitle: String,
+          user: Object,
+          userMeta: Object,
+          onMainPage: {
+            //used to determine if the arrow in the header should be shown or not
+            type: Boolean,
+            computed: 'isonMainPage(page)'
+          },
+          isCoorporate: {
+            type: Boolean,
+            computed: 'checkCoorporate(page)'
+          },
         };
       }
 
@@ -151,7 +204,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // If no page was found in the route data, page will be an empty string.
         // Deault to 'view1' in that case.
-        this.page = page || 'view1';
+        this.page = page || 'questions';
 
         // Close a non-persistent drawer when the page & route are changed.
         if (!this.$.drawer.persistent) {
@@ -160,6 +213,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _pageChanged(page) {
+        //change header image
+        this._changeHeaderImage();
+
         // Load page import on demand. Show 404 page if fails
         var resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
         Polymer.importHref(
@@ -167,6 +223,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             null,
             this._showPage404.bind(this),
             true);
+      }
+
+      isonMainPage(){
+        if(this.page == "questions") return true;
+        else return false;
+      }
+
+      checkCoorporate(){
+        if(this.page == "coorporate") return true;
+        return false;
+      }
+
+      _changeHeaderImage(){
+
+        //fire window resize
+        var event = document.createEvent('HTMLEvents');
+        event.initEvent('resize', true, false);
+        document.dispatchEvent(event);
+
+        this.$.mainTitle.style = null;
+
+        if(this.isCoorporate) {
+
+          this.$.appHeader.style.height = "180px";
+          this.updateStyles({'--header-image': 'url(https://www.venturepartner.me/wp-content/uploads/2017/06/pexels-photo-1.jpg)'});
+
+        }else{
+
+          this.$.appHeader.style.height = "auto";
+          this.updateStyles({'--header-image': 'none'});
+
+        }
       }
 
       _showPage404() {
