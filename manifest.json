@@ -1,11 +1,16 @@
 {
-  "name": "My App",
-  "short_name": "My App",
+  "name": "Voter",
+  "short_name": "Voter",
   "start_url": "./?homescreen=1",
   "display": "standalone",
-  "theme_color": "#3f51b5",
-  "background_color": "#3f51b5",
+  "theme_color": "#03A9F4",
+  "background_color": "#03A9F4",
   "icons": [
+    {
+      "src": "images/manifest/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
     {
       "src": "images/manifest/icon-192x192.png",
       "sizes": "192x192",
