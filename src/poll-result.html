@@ -216,7 +216,7 @@
         <div class="flex-left-right">
           <div id="totalVotes"></div>
           <div id="commentBtn">
-            <paper-icon-button on-tap="toggleComments" icon="custom-icons:comment">aa</paper-icon-button>
+            <paper-icon-button on-tap="toggleComments" icon="my-icons:comment">aa</paper-icon-button>
             <span id="commentCount">[[commentCount]]</span>
           </div>
         </div>
@@ -268,7 +268,10 @@
             type: Number,
             value: 3
           },
-          commentBodyLength: Number,
+          commentBodyLength:{
+            type: Number,
+            value: null
+          },
           questionTitle: {
             type: String,
             computed: 'setQuestionTitle(question)',
@@ -312,7 +315,7 @@
         if(!this.question.answers) return;
         if(!this.question.answers[uid]) return;
         const choice = this.question.answers[uid].choice;
-        if(this.$$('.myChoice')) this.$$('.myChoice').classList.remove('myChoice');
+        if(this.querySelector('.myChoice')) this.querySelector('.myChoice').classList.remove('myChoice');
         if(choice == 1) this.$.choice1.querySelector('.choiceBar').classList.add('myChoice');
         if(choice == 2) this.$.choice2.querySelector('.choiceBar').classList.add('myChoice');
         if(choice == 3) this.$.choice3.querySelector('.choiceBar').classList.add('myChoice');
@@ -369,10 +372,10 @@
       commentFocus(){
         if(this.$.commentBody.focused == true){
           this.focused = true;
-          this.fire('textarea-focused');
+          this.dispatchEvent(new CustomEvent('textarea-focused'));
         }else{
           this.focused = false;
-          this.fire('textarea-focused');
+          this.dispatchEvent(new CustomEvent('textarea-focused'));
         }
       }
 

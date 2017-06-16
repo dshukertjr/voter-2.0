@@ -15,7 +15,6 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-database-script.html">
 <link rel="import" href="my-icons.html">
 
-<link rel="lazy-import" href="my-view1.html">
 <link rel="lazy-import" href="my-post.html">
 <link rel="lazy-import" href="my-questions.html">
 <link rel="lazy-import" href="my-question.html">
@@ -119,7 +118,7 @@
       </app-drawer>
 
       <!-- Main content -->
-      <app-header-layout id="appHeaderLayout" has-scrolling-region>
+      <app-header-layout id="appHeaderLayout">
 
         <app-header id="appHeader" slot="header" condenses reveals effects="waterfall">
           <app-toolbar>
@@ -141,6 +140,7 @@
             selected="[[page]]"
             attr-for-selected="name"
             fallback-selection="view404"
+            selected-attribute="selected"
             role="main">
           <my-questions id="myQuestions" page-title="{{pageTitle}}" question-num="15" name="questions"></my-questions>
           <my-post name="post" page-title="{{pageTitle}}"></my-post>

@@ -1,4 +1,11 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="poll-result.html">
+<link rel="import" href="my-icons.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="my-questions">
@@ -6,18 +13,362 @@
     <style include="shared-styles">
       :host {
         display: block;
+        padding-bottom:72px;
+      }
 
-        padding: 10px;
+      paper-fab{
+        position:fixed;
+        right:20px;
+        bottom:20px;
+        --paper-fab-background:var(--app-primary-color);
+        --paper-fab-keyboard-focus-background:--accent-color;
+      }
+
+      #question-list{
+        list-style-type:none;
+        margin:0;
+        padding:0;
+      }
+
+      paper-spinner-lite[active] {
+        display: block;
+        width:50px;
+        height:50px;
+        margin: 10px auto;
+        --paper-spinner-layer-1-color: var(--app-primary-color);
+        --paper-spinner-layer-2-color: var(--app-primary-color);
+        --paper-spinner-layer-3-color: var(--app-primary-color);
+        --paper-spinner-layer-4-color: var(--app-primary-color);
+      }
+
+      #spinner{
+        margin:200px auto 0 auto;
+      }
+
+      paper-spinner-lite {
+        display: none;
+      }
+
+      #loadNew{
+        margin:8px;
+        display:block;
+        text-align:center;
+        -webkit-transition:max-height 0.2s;
+        transition:max-height 0.2s;
+        padding:0;
+        max-height:0;
+        overflow:hidden;
+      }
+
+      #loadNew.active{
+        padding:16px;
+        max-height:50px;
+      }
+
+      @media screen and (min-width:840px){
+        #question-list{
+          display:-webkit-flex;
+          display:flex;
+          -webkit-justify-content: space-between;
+          justify-content: space-between;
+          -webkit-flex-wrap:wrap;
+          flex-wrap:wrap;
+          -webkit-flex-direction:row;
+          flex-direction:row;
+        }
+
+        .question{
+          width:50%;
+        }
+
+        #loadNew{
+          width:100%;
+        }
+      }
+
+      @media screen and (min-width:1200px){
+        .question{
+          width:33.3%;
+        }
+      }
+
+      @media screen and (min-width:1500px){
+        .question{
+          width:25%;
+        }
+
+      @media screen and (min-width:1800px){
+        .question{
+          width:300px;
+        }
       }
     </style>
 
+    <firebase-auth 
+      app-name="drink"
+      id="auth" 
+      user="{{user}}" 
+      on-error="handleError">
+    </firebase-auth>
 
+   <firebase-query
+      app-name="drink"
+      id="questionQuery"
+      path="/questions"
+      on-app-changed="elementLoaded"
+      limit-to-last="1">
+    </firebase-query>
+
+    <ul id="question-list">
+      <paper-button class="card" id="loadNew" on-tap="loadNew">Load [[newQuestionNum]] More Questions</paper-button>
+
+      <template is="dom-repeat" items="[[questions]]" sort="_computeSort" as="question">
+        <poll-result on-textarea-focused="togglePaperFab" class="question" questionkey="[[question.$key]]"></poll-result>
+      </template>
+
+    </ul>
+
+    <paper-spinner-lite id="spinner" active></paper-spinner-lite>
+
+    <paper-spinner-lite id="loadingSpinner" active$="[[!canLoadMoreQuestions]]"></paper-spinner-lite>
+
+
+    <a id="paperFab" href="/post"><paper-fab elevation="3" icon="my-icons:add"></paper-fab></a>
 
   </template>
 
   <script>
     class MyQuestions extends Polymer.Element {
       static get is() { return 'my-questions'; }
+
+      static get properties() {
+        return {
+          questionNum: {
+            type: Number,
+            value: 15
+          },
+          user: Object,
+          questions: Object,
+          newestQuestionId: {
+            type: String,
+            observer: '_listenToNewQuestions'
+          },
+          oldestQuestionId: {
+            type: String,
+            observer: '_listenToNewQuestions'
+          },
+          currentQuestions: Object,
+          nearBottom: Boolean,
+          newQuestionNum: String,
+          canLoadMoreQuestions: {
+            type: Boolean,
+            value: true
+          },
+          pageTitle: {
+            type: String,
+            value: 'Questions',
+            notify: true
+          },
+          selected: { //used to determine if selected by iron pages as the current page
+            type: Boolean
+          }
+        };
+      }
+
+      elementLoaded(){
+        // this._loadQuestions(false);
+        this._loadInitialQuestions();
+        this._onLowerThreshold();
+      }
+
+      loadNew(){
+        this.$.loadNew.classList.remove('active');
+        // this._loadQuestions(true);
+        this._loadNewQuestions();
+      }
+
+      togglePaperFab(e){
+        if(e.target.focused == true){
+          this.$.paperFab.hidden = true;
+        }else{
+          this.$.paperFab.hidden = false;
+        }
+      }
+
+      _listenToNewQuestions(){
+        const loadNew = this.$.loadNew;
+        const thisElement = this;
+        const user = this.user;
+
+        //counts the number of newly added questions
+        var listen = function(snapshot) {
+          var count = -1;
+          var tempquestions = snapshot.val();
+          var loadOnce = true;
+          Object.keys(tempquestions).map(function(objectKey, index) {
+            if(count >= 0){
+              if(tempquestions[objectKey].meta.Uid === user.uid && loadOnce){
+                thisElement.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId).limitToFirst(16).off('value', listen);
+                thisElement.loadNew();
+                loadOnce = false;
+              }
+            }
+            count ++;
+          });
+          if(count > 0 && loadOnce) loadNew.classList.add('active');
+          else if(loadNew.classList.contains('active')) loadNew.classList.remove('active');
+
+          if(count >= 15) thisElement.newQuestionNum = '15+';
+          else thisElement.newQuestionNum = count;
+        };
+
+        if(this.newestQuestionId == null){
+          this.newQuestionNum = '0';
+          return;
+        }
+        thisElement.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId).limitToFirst(16).on('value', listen);
+        thisElement.addEventListener("reloaded", function(){
+          thisElement.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId).limitToFirst(16).off('value', listen);
+        });
+        //need to remove the added event here in the future
+      }
+
+      _objectToArray(object){
+        //converts object to array
+        if(object == null) return null;
+
+        var returnArray = [];
+
+        Object.keys(object).map(function(objectKey, index) {
+            var value = object[objectKey];
+            value.$key = objectKey;
+            returnArray.push(value);
+        });
+        return returnArray;
+      }
+
+      _loadInitialQuestions(){
+        //loads the initial questions
+        const thisElement = this;
+
+        //initial load
+        var query = this.$.questionQuery.ref.limitToLast(this.questionNum);
+
+        query.once('value').then(function(snapshot) {
+
+          var tempquestions = snapshot.val();
+
+          if(tempquestions != null){
+
+            thisElement.questions = thisElement._objectToArray(tempquestions);
+
+            this.dispatchEvent(new CustomEvent('reloaded'));
+            thisElement.oldestQuestionId = thisElement.questions[0].$key;
+            thisElement.newestQuestionId = thisElement.questions[thisElement.questions.length - 1].$key;
+
+          }
+
+          //for loading questions on lower threshold
+          if(thisElement.questions.length == thisElement.questionNum) thisElement.canLoadMoreQuestions = true;
+
+          thisElement.$.spinner.removeAttribute('active');
+        });
+      }
+
+      _loadNewQuestions(){
+        //loads the newly posted questions and preppends it to this.questions
+        const thisElement = this;
+
+        //initial load
+        var query = this.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId);
+
+        query.once('value').then(function(snapshot) {
+
+          var tempquestions = snapshot.val();
+
+          if(tempquestions != null){
+
+            tempquestions = thisElement._objectToArray(tempquestions);
+            tempquestions.shift();
+
+            thisElement.questions = tempquestions.concat(thisElement.questions);
+
+            thisElement.fire('reloaded');
+            thisElement.newestQuestionId = thisElement.questions[thisElement.questions.length - 1].$key;
+
+          }          
+        });
+      }
+
+      _loadMoreQuestions(){
+        //loads more questions and appends it to this.questions
+        const thisElement = this;
+
+        //initial load
+        var query = this.$.questionQuery.ref.limitToLast(11).endAt(null, thisElement.oldestQuestionId);
+
+        query.once('value').then(function(snapshot) {
+
+          var tempquestions = snapshot.val();
+
+          if(tempquestions != null){
+
+            tempquestions = thisElement._objectToArray(tempquestions);
+            tempquestions.pop();
+
+            if(tempquestions.length > 0){
+              thisElement.questions = thisElement.questions.concat(tempquestions);
+
+              thisElement.oldestQuestionId = tempquestions[0].$key;
+
+              thisElement.canLoadMoreQuestions = true;
+            }else{
+              thisElement.canLoadMoreQuestions = false;
+              thisElement.$.loadingSpinner.active = false;
+            } 
+  
+          }          
+        });
+      }
+
+      _onLowerThreshold(){
+        const lowerThreshold = 500;
+        thisElement = this;
+        window.addEventListener('scroll', function(e) {
+          if(thisElement.canLoadMoreQuestions && thisElement.selected){
+            var body = document.body; // For Chrome, Safari and Opera
+            var html = document.documentElement; // Firefox and IE
+            var documentHeight = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
+            var windowHeight = window.innerHeight;
+            var bodyScrollBottom = documentHeight - windowHeight - body.scrollTop;
+            var htmlScrollBottom = documentHeight - windowHeight - html.scrollTop;
+
+            //to take in account for difference browsers
+            var check = true;
+            if( bodyScrollBottom < lowerThreshold ){
+              // thisElement._loadMoreQuestions();
+              thisElement._loadMoreQuestions();
+              check = false;
+              thisElement.canLoadMoreQuestions = false;
+            }
+            if( htmlScrollBottom < lowerThreshold &&  check){
+              // thisElement._loadMoreQuestions();
+              thisElement._loadMoreQuestions();
+              thisElement.canLoadMoreQuestions = false;
+            }
+          }
+        });
+
+      }
+
+      _computeSort(a, b) {
+        // http://stackoverflow.com/questions/33953938/polymer-1-0-sorting-dom-repeat
+        if (a.$key == b.$key) {
+          return 0;
+        }
+        return a.$key > b.$key ? -1 : 1;
+      }
+
     }
 
     window.customElements.define(MyQuestions.is, MyQuestions);

@@ -1,4 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="poll-result.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="my-question">
@@ -6,18 +10,81 @@
     <style include="shared-styles">
       :host {
         display: block;
+      }
 
-        padding: 10px;
+      #question-list{
+        list-style-type:none;
+        margin:0;
+        padding:0;
+      }
+
+      paper-spinner-lite[active] {
+        display: block;
+        width:50px;
+        height:50px;
+        margin:200px auto 0 auto;
+        --paper-spinner-layer-1-color: var(--app-primary-color);
+        --paper-spinner-layer-2-color: var(--app-primary-color);
+        --paper-spinner-layer-3-color: var(--app-primary-color);
+        --paper-spinner-layer-4-color: var(--app-primary-color);
+      }
+
+      paper-spinner-lite {
+        display: none;
       }
     </style>
 
+    <app-route
+      route="{{route}}"
+      pattern="/:questionKey"
+      data="{{routeData}}">
+    </app-route>
 
+   <firebase-query
+      app-name="drink"
+      id="questionQuery"
+      path="/questions/[[questionKey]]"
+      limit-to-last="1"
+      data="{{question}}">
+    </firebase-query>
+
+    <ul id="question-list">
+      <poll-result question-title="{{pageTitle}}" comment-num="null" show-comment="true" class="question" questionkey="[[questionKey]]"></poll-result>
+    </ul>
 
   </template>
 
   <script>
     class MyQuestion extends Polymer.Element {
       static get is() { return 'my-question'; }
+
+      static get properties() {
+        return {
+
+          routeData: {
+            type: Object
+          },
+          questionKey: {
+            type: String,
+            computed: 'getQuestionKey(routeData)'
+          },
+          pageTitle: {
+            type: String,
+            observer: 'some',
+            notify: true
+          }
+          
+        };
+      }
+
+      some(){
+        console.log(this.questionTitle);
+      }
+
+      getQuestionKey(){
+        return this.routeData.questionKey;
+      }
+      
     }
 
     window.customElements.define(MyQuestion.is, MyQuestion);
