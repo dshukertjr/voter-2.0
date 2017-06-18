@@ -4,6 +4,7 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
 <link rel="import" href="poll-result.html">
 <link rel="import" href="my-icons.html">
 <link rel="import" href="shared-styles.html">
@@ -119,10 +120,17 @@
       limit-to-last="1">
     </firebase-query>
 
+    <app-indexeddb-mirror
+        key="questions"
+        data="[[questions]]"
+        persisted-data="{{persistedData}}">
+    </app-indexeddb-mirror>
+
+
     <ul id="question-list">
       <paper-button class="card" id="loadNew" on-tap="loadNew">Load [[newQuestionNum]] More Questions</paper-button>
 
-      <template is="dom-repeat" items="[[questions]]" sort="_computeSort" as="question">
+      <template is="dom-repeat" items="[[persistedData]]" sort="_computeSort" as="question">
         <poll-result on-textarea-focused="togglePaperFab" class="question" questionkey="[[question.$key]]"></poll-result>
       </template>
 
@@ -174,8 +182,16 @@
           selected: { //used to determine if selected by iron pages as the current page
             type: Boolean,
             observer: 'setPageTitle'
+          },
+          persistedData: {
+            type: Object,
+            observer: 'some'
           }
         };
+      }
+
+      some(){
+        console.log(this.persistedData);
       }
 
       setPageTitle(){
