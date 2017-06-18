@@ -11,8 +11,8 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-auth-script.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-database-script.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="my-icons.html">
 
 <link rel="lazy-import" href="my-post.html">
@@ -112,8 +112,8 @@
           Voter
         </app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="questions" href="/">Questions</a>
-          <a name="post" href="/post">Add New Question</a>
+          <a name="questions" href="/">タイムライン</a>
+          <a name="post" href="/post">質問投稿</a>
         </iron-selector>
       </app-drawer>
 
@@ -242,7 +242,7 @@
         event.initEvent('resize', true, false);
         document.dispatchEvent(event);
 
-        this.$.mainTitle.style = null;
+        // this.$.mainTitle.style = null;
 
         if(this.isCoorporate) {
 

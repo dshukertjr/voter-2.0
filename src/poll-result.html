@@ -1,6 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
@@ -239,6 +240,8 @@
       </div>
 
     </li>
+
+    <paper-toast id="toast" text="ゲストとしてログイン中..."></paper-toast>
 
   </template>
 
@@ -484,9 +487,13 @@
         };
 
         if(!this.user){
+
+          const toast = this.$.toast;
+          toast.open();
           //if not signed in, sign in first
           this.$.auth.signInAnonymously()
           .then(function(response){
+            toast.close();
             var path = "/users/" + response.uid;
             userDocument.path = path;
             questionDocument.ref.child('answers').child(response.uid).set(answer);

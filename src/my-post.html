@@ -51,24 +51,23 @@
     </firebase-query>
 
     <div class="card">
-      <h1>Post a question</h1>
-      <paper-textarea id="question" label="Question" placeholder="e.g. Warriors or Cavs?"></paper-textarea>
+      <paper-textarea id="question" label="質問"></paper-textarea>
 
-      <paper-textarea id="choice1" class="choices" label="Choice 1" placeholder="e.g. Warriors!"></paper-textarea>
+      <paper-textarea id="choice1" class="choices" label="選択肢 1"></paper-textarea>
 
-      <paper-textarea id="choice2" class="choices" label="Choice 2" placeholder="e.g. Cavs!"></paper-textarea>
+      <paper-textarea id="choice2" class="choices" label="選択肢 2"></paper-textarea>
 
-      <paper-button id="reveal3" on-tap="reveal3"><iron-icon icon="my-icons:add" prefix></iron-icon>Add more</paper-button>
-      <paper-textarea id="choice3" class="choices" label="Choice 3" placeholder="e.g. Wait, I'm a Celtics fan!" hidden="true"></paper-textarea>
+      <paper-button id="reveal3" on-tap="reveal3"><iron-icon icon="my-icons:add" prefix></iron-icon>追加</paper-button>
+      <paper-textarea id="choice3" class="choices" label="選択肢 3（省略可）" hidden="true"></paper-textarea>
 
-      <paper-button id="reveal4" on-tap="reveal4" hidden="true"><iron-icon icon="my-icons:add" prefix></iron-icon>Add more</paper-button>
-      <paper-textarea id="choice4" class="choices" label="Choice 4" placeholder="e.g. Other" hidden="true"></paper-textarea>
+      <paper-button id="reveal4" on-tap="reveal4" hidden="true"><iron-icon icon="my-icons:add" prefix></iron-icon>追加</paper-button>
+      <paper-textarea id="choice4" class="choices" label="選択肢 4（省略可）" hidden="true"></paper-textarea>
 
-      <paper-button id="reveal5" on-tap="reveal5" hidden="true"><iron-icon icon="my-icons:add" prefix></iron-icon>Add more</paper-button>
-      <paper-textarea id="choice5" class="choices" label="Choice 5" placeholder="e.g. Not a fan of basket ball fan..." hidden="true"></paper-textarea>
+      <paper-button id="reveal5" on-tap="reveal5" hidden="true"><iron-icon icon="my-icons:add" prefix></iron-icon>追加</paper-button>
+      <paper-textarea id="choice5" class="choices" label="選択肢 5（省略可）" hidden="true"></paper-textarea>
       <div class="buttons">
-        <a href="/"><paper-button on-tap="post" id="btnPost" raised>Post</paper-button></a>
-        <a href="/"><paper-button id="cancel">Cancel</paper-button></a>
+        <a href="/"><paper-button on-tap="post" id="btnPost" raised>投稿！</paper-button></a>
+        <a href="/"><paper-button id="cancel">キャンセル</paper-button></a>
       </div>
     </div>
 
@@ -84,10 +83,20 @@
           user: Object,
           pageTitle: {
             type: String,
-            value: 'Add New Question',
+            value: '質問を投稿',
             notify: true
+          },
+          selected: { //used to determine if selected by iron pages as the current page
+            type: Boolean,
+            observer: 'setPageTitle'
           }
         };
+      }
+
+      setPageTitle(){
+        if(this.selected){
+          this.pageTitle = "質問する";
+        }
       }
 
        post() {

@@ -154,8 +154,7 @@
             observer: '_listenToNewQuestions'
           },
           oldestQuestionId: {
-            type: String,
-            observer: '_listenToNewQuestions'
+            type: String
           },
           currentQuestions: Object,
           nearBottom: Boolean,
@@ -164,15 +163,25 @@
             type: Boolean,
             value: true
           },
+          canLoadNewQuestions: {
+            type: Boolean,
+            value: true
+          },
           pageTitle: {
             type: String,
-            value: 'Questions',
             notify: true
           },
           selected: { //used to determine if selected by iron pages as the current page
-            type: Boolean
+            type: Boolean,
+            observer: 'setPageTitle'
           }
         };
+      }
+
+      setPageTitle(){
+        if(this.selected){
+          this.pageTitle = "タイムライン";
+        }
       }
 
       elementLoaded(){
@@ -182,9 +191,12 @@
       }
 
       loadNew(){
-        this.$.loadNew.classList.remove('active');
-        // this._loadQuestions(true);
-        this._loadNewQuestions();
+        if(this.canLoadNewQuestions){
+          this.canLoadNewQuestions = false;
+          this.$.loadNew.classList.remove('active');
+          // this._loadQuestions(true);
+          this._loadNewQuestions();
+        }
       }
 
       togglePaperFab(e){
@@ -205,6 +217,7 @@
           var count = -1;
           var tempquestions = snapshot.val();
           var loadOnce = true;
+          console.log(tempquestions);
           Object.keys(tempquestions).map(function(objectKey, index) {
             if(count >= 0){
               if(tempquestions[objectKey].meta.Uid === user.uid && loadOnce){
@@ -262,7 +275,7 @@
 
             thisElement.questions = thisElement._objectToArray(tempquestions);
 
-            this.dispatchEvent(new CustomEvent('reloaded'));
+            thisElement.dispatchEvent(new CustomEvent('reloaded'));
             thisElement.oldestQuestionId = thisElement.questions[0].$key;
             thisElement.newestQuestionId = thisElement.questions[thisElement.questions.length - 1].$key;
 
@@ -284,6 +297,8 @@
 
         query.once('value').then(function(snapshot) {
 
+          thisElement.canLoadNewQuestions = false;
+
           var tempquestions = snapshot.val();
 
           if(tempquestions != null){
@@ -293,7 +308,7 @@
 
             thisElement.questions = tempquestions.concat(thisElement.questions);
 
-            thisElement.fire('reloaded');
+            thisElement.dispatchEvent(new CustomEvent('reloaded'));
             thisElement.newestQuestionId = thisElement.questions[thisElement.questions.length - 1].$key;
 
           }          
@@ -333,7 +348,7 @@
 
       _onLowerThreshold(){
         const lowerThreshold = 500;
-        thisElement = this;
+        const thisElement = this;
         window.addEventListener('scroll', function(e) {
           if(thisElement.canLoadMoreQuestions && thisElement.selected){
             var body = document.body; // For Chrome, Safari and Opera
