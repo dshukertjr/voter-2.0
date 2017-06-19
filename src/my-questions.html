@@ -117,15 +117,17 @@
       id="questionQuery"
       path="/questions"
       on-app-changed="elementLoaded"
-      limit-to-last="1">
+      limit-to-last="3"
+      data="{{some}}">
     </firebase-query>
 
     <app-indexeddb-mirror
         key="questions"
+        session="[[user.uid]]"
         data="[[questions]]"
+        log="true"
         persisted-data="{{persistedData}}">
     </app-indexeddb-mirror>
-
 
     <ul id="question-list">
       <paper-button class="card" id="loadNew" on-tap="loadNew">Load [[newQuestionNum]] More Questions</paper-button>
@@ -185,12 +187,12 @@
           },
           persistedData: {
             type: Object,
-            observer: 'some'
+            observer: 'showdata'
           }
         };
       }
 
-      some(){
+      showdata(){
         console.log(this.persistedData);
       }
 
@@ -233,7 +235,7 @@
           var count = -1;
           var tempquestions = snapshot.val();
           var loadOnce = true;
-          console.log(tempquestions);
+          // console.log(tempquestions);
           Object.keys(tempquestions).map(function(objectKey, index) {
             if(count >= 0){
               if(tempquestions[objectKey].meta.Uid === user.uid && loadOnce){

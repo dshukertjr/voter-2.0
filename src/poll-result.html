@@ -155,64 +155,71 @@
 
     <firebase-auth 
       app-name="drink"
-      id="auth" 
-      user="{{user}}" 
-      provider="" 
+      id="auth"
+      online="{{online}}"
+      user="{{user}}"
       on-error="handleError">
     </firebase-auth>
 
+    <app-indexeddb-mirror
+        key="[[questionkey]]"
+        session="[[user.uid]]"
+        data="[[question]]"
+        persisted-data="{{persistedData}}">
+    </app-indexeddb-mirror>
+
     <li class="card question" id="card">
-      <h3 id="questionTitle" class="content">[[question.meta.question]]</h3>
+      <h3 id="questionTitle" class="content">[[persistedData.meta.question]]</h3>
 
       <div id="answerButtons" class="choices-wrapper flex" hidden="true">
-        <paper-button on-tap="answer" data-choice="1" class="choice" raised>[[question.meta.choice1]]</paper-button>
-        <paper-button on-tap="answer" class="choice" data-choice="2" raised>[[question.meta.choice2]]</paper-button>
-        <paper-button on-tap="answer" class="choice" data-choice="3" raised hidden$="[[!question.meta.choice3]]">[[question.meta.choice3]]</paper-button>
-        <paper-button on-tap="answer" class="choice" data-choice="4" raised hidden$="[[!question.meta.choice4]]">[[question.meta.choice4]]</paper-button>
-        <paper-button on-tap="answer" class="choice" data-choice="5" raised hidden$="[[!question.meta.choice5]]">[[question.meta.choice5]]</paper-button>
+        <paper-button disabled$="[[!online]]" on-tap="answer" data-choice="1" class="choice" raised>[[persistedData.meta.choice1]]</paper-button>
+        <paper-button disabled$="[[!online]]" on-tap="answer" class="choice" data-choice="2" raised>[[persistedData.meta.choice2]]</paper-button>
+        <paper-button disabled$="[[!online]]" on-tap="answer" class="choice" data-choice="3" raised hidden$="[[!persistedData.meta.choice3]]">[[persistedData.meta.choice3]]</paper-button>
+        <paper-button disabled$="[[!online]]" on-tap="answer" class="choice" data-choice="4" raised hidden$="[[!persistedData.meta.choice4]]">[[question.meta.choice4]]</paper-button>
+        <paper-button disabled$="[[!online]]" on-tap="answer" class="choice" data-choice="5" raised hidden$="[[!persistedData.meta.choice5]]">[[persistedData.meta.choice5]]</paper-button>
       </div>
 
       <div id="results" hidden="true">
-        <div class="choiceWrapper" id="choice1" hidden$="[[!question.meta.choice1]]">
+        <div class="choiceWrapper" id="choice1" hidden$="[[!persistedData.meta.choice1]]">
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
-            <div class="choiceLabel">[[question.meta.choice1]]</div>
+            <div class="choiceLabel">[[persistedData.meta.choice1]]</div>
             <div class="choiceValue">0</div>
             <div class="choicePercent"><span class="percent">0</span>%</div>
           </div>
         </div>
 
-        <div class="choiceWrapper" id="choice2" hidden$="[[!question.meta.choice2]]">
+        <div class="choiceWrapper" id="choice2" hidden$="[[!persistedData.meta.choice2]]">
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
-            <div class="choiceLabel">[[question.meta.choice2]]</div>
+            <div class="choiceLabel">[[persistedData.meta.choice2]]</div>
             <div class="choiceValue">0</div>
             <div class="choicePercent"><span class="percent">0</span>%</div>
           </div>
         </div>
 
-        <div class="choiceWrapper" id="choice3" hidden$="[[!question.meta.choice3]]">
+        <div class="choiceWrapper" id="choice3" hidden$="[[!persistedData.meta.choice3]]">
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
-            <div class="choiceLabel">[[question.meta.choice3]]</div>
+            <div class="choiceLabel">[[persistedData.meta.choice3]]</div>
             <div class="choiceValue">0</div>
             <div class="choicePercent"><span class="percent">0</span>%</div>
           </div>
         </div>
 
-        <div class="choiceWrapper" id="choice4" hidden$="[[!question.meta.choice4]]">
+        <div class="choiceWrapper" id="choice4" hidden$="[[!persistedData.meta.choice4]]">
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
-            <div class="choiceLabel">[[question.meta.choice4]]</div>
+            <div class="choiceLabel">[[persistedData.meta.choice4]]</div>
             <div class="choiceValue">0</div>
             <div class="choicePercent"><span class="percent">0</span>%</div>
           </div>
         </div>
 
-        <div class="choiceWrapper" id="choice5" hidden$="[[!question.meta.choice5]]">
+        <div class="choiceWrapper" id="choice5" hidden$="[[!persistedData.meta.choice5]]">
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
-            <div class="choiceLabel">[[question.meta.choice5]]</div>
+            <div class="choiceLabel">[[persistedData.meta.choice5]]</div>
             <div class="choiceValue">0</div>
             <div class="choicePercent"><span class="percent">0</span>%</div>
           </div>
@@ -283,7 +290,8 @@
             type: String,
             computed: 'setQuestionTitle(question)',
             notify:true
-          }
+          },
+          online: Boolean
         }
       }
 
