@@ -1,13 +1,15 @@
 {
   "rules": {
     "users": {
-      "$uid": {
-        "public": {
+      "public": {
+        "$uid": {
           ".read": "true",
           ".write": "$uid === auth.uid"
-        },
-        "private": {//only allow users with coorporate true to read users' private information
-          ".read": "true",
+        }
+      },
+      "private": {//only allow users with coorporate true to read users' private information
+        "$uid": {
+          ".read": "false",
           ".write": "$uid === auth.uid"
         }
       }

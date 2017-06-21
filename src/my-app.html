@@ -17,6 +17,7 @@
 <link rel="import" href="my-icons.html">
 
 <link rel="lazy-import" href="my-post.html">
+<link rel="lazy-import" href="my-user.html">
 <link rel="lazy-import" href="my-questions.html">
 <link rel="lazy-import" href="my-question.html">
 <link rel="lazy-import" href="my-view404.html">
@@ -43,6 +44,11 @@
 
       app-header paper-icon-button {
         --paper-icon-button-ink-color: white;
+      }
+
+      #userName{
+        color:#fff;
+        text-decoration:none;
       }
 
       #mainTitle{
@@ -77,9 +83,15 @@
       }
 
       paper-toast{
-        min-width: auto;
+        min-width:auto !important;
       }
-    </style>
+
+      @media screen and (min-width:641px){
+       #menuButton{
+          display:none;
+        }
+      }
+      </style>
 
     <firebase-app 
       name="drink"
@@ -99,8 +111,8 @@
     <firebase-document
       app-name="drink"
       id="userDocument"
-      path="/users/{{user.uid}}"
-      data="{{userMeta}}">
+      path="/users/public/[[user.uid]]"
+      data="{{userPublic}}">
     </firebase-document>
 
     <app-location route="{{route}}"></app-location>
@@ -120,18 +132,19 @@
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
           <a name="questions" href="/">タイムライン</a>
           <a name="post" href="/post">質問投稿</a>
+          <a name="post" href="/user">ユーザー管理</a>
         </iron-selector>
       </app-drawer>
 
       <!-- Main content -->
       <app-header-layout id="appHeaderLayout">
 
-        <app-header id="appHeader" slot="header" condenses reveals effects="waterfall">
+        <app-header id="appHeader" slot="header" condenses reveals effects="waterfall resize-title blend-background">
           <app-toolbar>
             <a id="backArrow" hidden$="[[onMainPage]]" href="/"><paper-icon-button icon="my-icons:arrow-back"></paper-icon-button></a>
-            <div hidden$="[[!onMainPage]]"><paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button></div>
+            <div id="menuButton" hidden$="[[!onMainPage]]"><paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button></div>
             <div id="mainTitle" condensed-title$="[[isCoorporate]]" main-title$="[[!isCoorporate]]">[[pageTitle]]</div>
-            <div hidden$="[[!user]]">ゲスト</div>
+            <div hidden$="[[!user]]"><a id="userName" href="/user">[[userName]]</a></div>
           </app-toolbar>
 
           <template is="dom-if" if="[[isCoorporate]]">
@@ -150,13 +163,14 @@
             role="main">
           <my-questions id="myQuestions" page-title="{{pageTitle}}" question-num="15" name="questions"></my-questions>
           <my-post name="post" page-title="{{pageTitle}}"></my-post>
+          <my-user name="user" page-title="{{pageTitle}}"></my-user>
           <my-question name="question" page-title="{{pageTitle}}" route="{{subroute}}"></my-question>
           <my-view404 name="view404"></my-view404>
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
 
-    <paper-toast opened$="[[!online]]" id="toast" duration="0" text="オフラインです">
+    <paper-toast opened$="[[!online]]" id="toast" raised duration="0" text="オフラインです">
       <paper-icon-button on-tap="closeToast" icon="my-icons:close"></paper-icon-button>
     </paper-toast>
 
@@ -179,7 +193,11 @@
           subroute: String,
           pageTitle: String,
           user: Object,
-          userMeta: Object,
+          userPublic: Object,
+          userName:{
+            type: String,
+            computed: 'asignUserName(userPublic.userName)'
+          },
           online: Boolean,
           onMainPage: {
             //used to determine if the arrow in the header should be shown or not
@@ -189,7 +207,7 @@
           isCoorporate: {
             type: Boolean,
             computed: 'checkCoorporate(page)'
-          },
+          }
         };
       }
 
@@ -197,6 +215,13 @@
         return [
           '_routePageChanged(routeData.page)',
         ];
+      }
+
+      asignUserName(){
+        if(this.userPublic == null) return 'ゲスト';
+        if(this.userPublic.userName == null) return 'ゲスト';
+        if(this.userPublic.userName == "") return 'ゲスト';
+        return this.userPublic.userName;
       }
 
       constructor() {
@@ -247,6 +272,10 @@
       }
 
       checkCoorporate(){
+
+        return true;
+
+
         if(this.page == "coorporate") return true;
         return false;
       }
@@ -263,7 +292,7 @@
         if(this.isCoorporate) {
 
           this.$.appHeader.style.height = "180px";
-          this.updateStyles({'--header-image': 'url(https://www.venturepartner.me/wp-content/uploads/2017/06/pexels-photo-1.jpg)'});
+          this.updateStyles({'--header-image': 'url(/images/header.jpg)'});
 
         }else{
 

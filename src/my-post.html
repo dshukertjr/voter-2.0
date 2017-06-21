@@ -66,7 +66,7 @@
       <paper-button id="reveal5" on-tap="reveal5" hidden="true"><iron-icon icon="my-icons:add" prefix></iron-icon>追加</paper-button>
       <paper-textarea id="choice5" class="choices" label="選択肢 5（省略可）" hidden="true"></paper-textarea>
       <div class="buttons">
-        <a href="/"><paper-button on-tap="post" id="btnPost" raised>投稿！</paper-button></a>
+        <a href="/"><paper-button on-tap="post" id="btnPost" raised>投稿</paper-button></a>
         <a href="/"><paper-button id="cancel">キャンセル</paper-button></a>
       </div>
     </div>
@@ -83,7 +83,6 @@
           user: Object,
           pageTitle: {
             type: String,
-            value: '質問を投稿',
             notify: true
           },
           selected: { //used to determine if selected by iron pages as the current page
@@ -95,7 +94,7 @@
 
       setPageTitle(){
         if(this.selected){
-          this.pageTitle = "質問する";
+          this.pageTitle = "Ask a Question";
         }
       }
 

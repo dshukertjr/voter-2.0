@@ -4,6 +4,7 @@
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="my-icons.html">
@@ -112,8 +113,7 @@
       }
 
       #commentButton{
-        background:var(--app-primary-color);
-        color:#fff;
+        color:var(--app-primary-color);
       }
 
       #comment-text-box{
@@ -141,8 +141,8 @@
 
     <firebase-document
       app-name="drink"
-      id="userDocument"
-      path="/users/[[user.uid]]">
+      id="userPrivate"
+      path="/users/private/[[user.uid]]">
     </firebase-document>
 
    <firebase-query
@@ -236,7 +236,7 @@
         <iron-collapse id="comments" opened$="[[showComment]]">
           <div id="comment-text-box" class="flex-left-right">
             <paper-textarea on-value-changed="textareaChanged" maxlength="255" on-focused-changed="commentFocus" id="commentBody" label="Leave a comment"></paper-textarea>
-            <paper-button hidden$="[[!commentBodyLength]]" id="commentButton" on-tap="postComment" raised>comment</paper-button>
+            <paper-icon-button hidden$="[[!commentBodyLength]]" id="commentButton" on-tap="postComment" icon="my-icons:send"></paper-icon-button>
           </div>
           <template is="dom-repeat" items="[[comments]]" sort="_computeSort" as="comment">
             <div>
@@ -347,10 +347,10 @@
           Uid: this.user.uid
         }
         const userRef = {
-          questionKey: questionKey
+          body: body
         }
         this.$.questionDocument.ref.child('comments').push(comment);
-        this.$.userDocument.ref.child('comments').child(questionKey).set(userRef);
+        this.$.userPrivate.ref.child('comments').child(questionKey).set(userRef);
         this.$.commentBody.value = null;
       }
 
@@ -491,7 +491,7 @@
         choice = parseInt(choice);
         var questionKey = this.questionkey;
         const questionDocument = this.$.questionDocument;
-        const userDocument = this.$.userDocument;
+        const userPrivate = this.$.userPrivate;
         const user = this.user;
 
         var answer = {
@@ -506,15 +506,15 @@
           this.$.auth.signInAnonymously()
           .then(function(response){
             toast.close();
-            var path = "/users/" + response.uid;
-            userDocument.path = path;
+            var path = "/users/private/" + response.uid;
+            userPrivate.path = path;
             questionDocument.ref.child('answers').child(response.uid).set(answer);
-            userDocument.ref.child('private').child('answers').child(questionKey).set(answer);
+            userPrivate.ref.child('private').child('answers').child(questionKey).set(answer);
           });
         }
         else{
           questionDocument.ref.child('answers').child(user.uid).set(answer);
-          userDocument.ref.child('private').child('answers').child(questionKey).set(answer);
+          userPrivate.ref.child('private').child('answers').child(questionKey).set(answer);
         }
       }
 
