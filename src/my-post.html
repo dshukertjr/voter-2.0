@@ -19,15 +19,6 @@
       a{
         text-decoration:none;
       }
-
-      #btnPost{
-        background:var(--app-primary-color);
-        color:#fff;
-      }
-
-      #cancel{
-        color:#000;
-      }
     </style>
 
     <firebase-auth 
@@ -66,7 +57,7 @@
       <paper-button id="reveal5" on-tap="reveal5" hidden="true"><iron-icon icon="my-icons:add" prefix></iron-icon>追加</paper-button>
       <paper-textarea id="choice5" class="choices" label="選択肢 5（省略可）" hidden="true"></paper-textarea>
       <div class="buttons">
-        <a href="/"><paper-button on-tap="post" id="btnPost" raised>投稿</paper-button></a>
+        <a href="/"><paper-button on-tap="post" id="btnPost" class="primaryBtn" raised>投稿</paper-button></a>
         <a href="/"><paper-button id="cancel">キャンセル</paper-button></a>
       </div>
     </div>
@@ -88,6 +79,10 @@
           selected: { //used to determine if selected by iron pages as the current page
             type: Boolean,
             observer: 'setPageTitle'
+          },
+          isCoorporate: {
+            type: Boolean,
+            notify:true
           }
         };
       }
@@ -95,18 +90,18 @@
       setPageTitle(){
         if(this.selected){
           this.pageTitle = "Ask a Question";
+          this.isCoorporate = false;
         }
       }
 
        post() {
         var question = {
-          "meta": {
-            "Uid": this.user.uid,
+          meta: {
             "question": this.$.question.value,
             "choice1": this.$.choice1.value,
             "choice2": this.$.choice2.value
           }
-        }
+        };
         // if(this.$.afterMessage.value != null) data["afterMessage"] = this.$.afterMessage.value;
         if(this.$.choice3.value != null) question["meta"]["choice3"] = this.$.choice3.value;
         if(this.$.choice4.value != null) question["meta"]["choice4"] = this.$.choice4.value;
@@ -117,10 +112,12 @@
           //if not signed in, sign in first
           this.$.auth.signInAnonymously()
           .then(function(response){
+            question["meta"]["Uid"] = response.uid;
             query.ref.push(question);
           });
         }else{
-          this.$.query.ref.push(question);
+          question["meta"]["Uid"] = this.user.uid;
+          query.ref.push(question);
         }
 
 
@@ -132,11 +129,6 @@
         this.$.choice3.value = null;
         this.$.choice4.value = null;
         this.$.choice5.value = null;
-      }
-
-      revealAfterMessage() {
-        this.$.revealAfterMessage.hidden = true;
-        this.$.afterMessage.hidden = false;
       }
 
       reveal3() {

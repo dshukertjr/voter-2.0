@@ -55,6 +55,7 @@
         overflow:hidden;
         text-overflow: ellipsis;
         padding-right:16px;
+        white-space: nowrap;
       }
 
       #main-title-toolbar{
@@ -97,7 +98,8 @@
       name="drink"
       auth-domain="drink-f8aff.firebaseapp.com" 
       database-url="https://drink-f8aff.firebaseio.com" 
-      api-key="AIzaSyBzOoSEui2_rJSxLTSoYWcNpP2bUcO9bpY">
+      api-key="AIzaSyBzOoSEui2_rJSxLTSoYWcNpP2bUcO9bpY"
+      storage-bucket="drink-f8aff.appspot.com">
     </firebase-app>
 
     <firebase-auth 
@@ -132,7 +134,7 @@
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
           <a name="questions" href="/">タイムライン</a>
           <a name="post" href="/post">質問投稿</a>
-          <a name="post" href="/user">ユーザー管理</a>
+          <a name="user" href="/user">ユーザー管理</a>
         </iron-selector>
       </app-drawer>
 
@@ -156,16 +158,19 @@
         </app-header>
 
         <iron-pages
-            selected="[[page]]"
+            selected="{{page}}"
             attr-for-selected="name"
             fallback-selection="view404"
             selected-attribute="selected"
             role="main">
-          <my-questions id="myQuestions" page-title="{{pageTitle}}" question-num="15" name="questions"></my-questions>
-          <my-post name="post" page-title="{{pageTitle}}"></my-post>
-          <my-user name="user" page-title="{{pageTitle}}"></my-user>
-          <my-question name="question" page-title="{{pageTitle}}" route="{{subroute}}"></my-question>
-          <my-view404 name="view404"></my-view404>
+          <my-questions is-coorporate="{{isCoorporate}}" id="myQuestions" page-title="{{pageTitle}}" question-num="15" name="questions"></my-questions>
+          <my-post is-coorporate="{{isCoorporate}}" name="post" page-title="{{pageTitle}}"></my-post>
+          <my-user is-coorporate="{{isCoorporate}}" name="user" page-title="{{pageTitle}}"></my-user>
+          <my-question is-coorporate="{{isCoorporate}}" name="question" page-title="{{pageTitle}}" route="{{subroute}}"></my-question>
+          <my-coorporate is-coorporate="{{isCoorporate}}" name="coorporate" page-title="{{pageTitle}}"></my-coorporate>
+          <my-editquestionset header-image="{{headerImage}}" is-coorporate="{{isCoorporate}}" name="editquestionset" page-title="{{pageTitle}}" route="{{subroute}}"></my-editquestionset>
+          <my-survey header-image="{{headerImage}}" is-coorporate="{{isCoorporate}}" name="survey" page-title="{{pageTitle}}" route="{{subroute}}"></my-survey>
+          <my-view404 is-coorporate="{{isCoorporate}}" name="view404"></my-view404>
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
@@ -188,6 +193,10 @@
             reflectToAttribute: true,
             observer: '_pageChanged',
           },
+          headerImage: {
+            type: String,
+            observer: '_changeHeaderImage'
+          },
           rootPattern: String,
           routeData: Object,
           subroute: String,
@@ -206,7 +215,8 @@
           },
           isCoorporate: {
             type: Boolean,
-            computed: 'checkCoorporate(page)'
+            value: false,
+            observer: '_changeHeaderImage'
           }
         };
       }
@@ -218,6 +228,7 @@
       }
 
       asignUserName(){
+        if(!this.user) return '';
         if(this.userPublic == null) return 'ゲスト';
         if(this.userPublic.userName == null) return 'ゲスト';
         if(this.userPublic.userName == "") return 'ゲスト';
@@ -271,15 +282,6 @@
         else return false;
       }
 
-      checkCoorporate(){
-
-        return true;
-
-
-        if(this.page == "coorporate") return true;
-        return false;
-      }
-
       _changeHeaderImage(){
 
         //fire window resize
@@ -292,7 +294,7 @@
         if(this.isCoorporate) {
 
           this.$.appHeader.style.height = "180px";
-          this.updateStyles({'--header-image': 'url(/images/header.jpg)'});
+          this.updateStyles({'--header-image': 'url('+this.headerImage+')'});
 
         }else{
 

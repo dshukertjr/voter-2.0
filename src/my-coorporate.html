@@ -1,0 +1,146 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="post-question.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-coorporate">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 8px;
+        -webkit-animation: fadeIn 0.2s 1;
+        animation: fadeIn 0.2s 1;
+      }
+
+      a{
+        text-decoration:none;
+      }
+
+      .cardWrapper{
+        display:block;
+        margin:8px 0;
+      }
+
+      paper-card{
+        --paper-card-header-color: #fff;
+      }
+
+      #btnPost{
+        background:var(--app-primary-color);
+        color:#fff;
+      }
+
+      #cancel{
+        color:#000;
+      }
+
+      #createQuestionSetBtn{
+        background: #fff;
+        display:block;
+        text-align:center;
+      }
+    </style>
+
+    <firebase-auth 
+      app-name="drink"
+      id="auth" 
+      user="{{user}}" 
+      on-error="handleError">
+    </firebase-auth>
+
+    <firebase-query
+      app-name="drink"
+      id="questionSetQuery"
+      path="/users/questionSets/[[user.uid]]"
+      data="{{questionSets}}">
+    </firebase-query>
+
+    <paper-button id="createQuestionSetBtn" raised on-tap="createQuestionSet"><iron-icon icon="my-icons:add" prefix></iron-icon>アンケートを追加</paper-button>
+
+    <template is="dom-repeat" items="[[questionSets]]" sort="_computeSort" as="questionSet">
+
+      <a class="cardWrapper" href="/editquestionset/[[questionSet.$key]]">
+        <paper-card heading="[[questionSet.meta.title]]" image="[[questionSet.meta.headerImage]]" alt="QuestionSet">
+          <div class="card-content">[[questionSet.meta.desc]]</div>
+        </paper-card>
+      </a>
+
+    </template>
+
+  </template>
+
+  <script>
+    class MyCoorporate extends Polymer.Element {
+      static get is() { return 'my-coorporate'; }
+
+      static get properties() {
+        return {
+          user: Object,
+          pageTitle: {
+            type: String,
+            notify: true
+          },
+          questionSets: Object,
+          selected: { //used to determine if selected by iron pages as the current page
+            type: Boolean,
+            observer: 'setPageTitle'
+          },
+          isCoorporate: {
+            type: Boolean,
+            notify:true
+          }
+        };
+      }
+
+      setPageTitle(){
+        if(this.selected){
+          this.pageTitle = "Coorporate";
+          this.isCoorporate = false;
+        }
+      }
+
+      createQuestionSet(){
+        var image = [
+          "/images/defaultImages/killershark.jpg",
+          "/images/defaultImages/paris.jpg",
+          "/images/defaultImages/kyoto.jpeg",
+          "/images/defaultImages/germany.jpeg",
+          "/images/defaultImages/lightbeach.jpg"
+        ];
+
+        var randomNum = Math.floor((Math.random() * 4) + 1);
+
+        image = image[randomNum];
+
+        var questionSet = {
+          meta: {
+            Uid: this.user.uid,
+            title: "新しいアンケート",
+            desc: "",
+            headerImage: image
+          }
+        }
+        this.$.questionSetQuery.ref.push(questionSet).then(function(){
+
+        });
+      }
+
+      _computeSort(a, b) {
+        // http://stackoverflow.com/questions/33953938/polymer-1-0-sorting-dom-repeat
+        if (a.$key == b.$key) {
+          return 0;
+        }
+        return a.$key > b.$key ? -1 : 1;
+      }
+
+    }
+
+    window.customElements.define(MyCoorporate.is, MyCoorporate);
+  </script>
+</dom-module>

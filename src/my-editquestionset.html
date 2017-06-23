@@ -1,0 +1,203 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="post-question.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-editquestionset">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 8px;
+      }
+
+      #createQuestionBtn{
+        background: #fff;
+        display:block;
+        margin:8px auto;
+        max-width:200px;
+        text-align:center;
+      }
+
+      .card{
+        margin:8px;
+      }
+    </style>
+
+    <app-route
+      route="{{route}}"
+      pattern="/:questionKey"
+      data="{{routeData}}">
+    </app-route>
+
+    <firebase-auth 
+      app-name="drink"
+      id="auth" 
+      user="{{user}}" 
+      on-error="handleError">
+    </firebase-auth>
+
+    <firebase-document
+      app-name="drink"
+      id="questionSetDocument"
+      path="/users/questionSets/[[user.uid]]/[[questionSetKey]]"
+      data="{{questionSet}}">
+    </firebase-document>
+
+    <firebase-query
+      app-name="drink"
+      path="/users/questionSets/[[user.uid]]/[[questionSetKey]]/questions"
+      data="{{questions}}">
+    </firebase-query>
+
+    <div class="card">
+      <h2>アンケート情報</h2>
+      <paper-input id="questionTitle" label="アンケートタイトル" value="[[questionSet.meta.title]]"></paper-input>      
+      <paper-input id="questionDesc" label="簡単な説明（省略可）" value="[[questionSet.meta.desc]]"></paper-input>      
+      <!-- <paper-input id="questionHeaderImage" label="ヘッダー画像" type="file"></paper-input> -->
+      <div class="buttons">
+        <paper-button class="primaryBtn" raised on-tap="setQuestionSetMeta">保存</paper-button>
+        <a href="/survey/[[questionSet.meta.Uid]]/[[questionSetKey]]"><paper-button raised>プレビュー<iron-icon icon="my-icons:arrow-forward"></iron-icon></paper-button></a>
+      </div>
+    </div>
+
+    <paper-button id="createQuestionBtn" class="card" raised on-tap="createQuestion"><iron-icon icon="my-icons:add" prefix></iron-icon>質問を追加</paper-button>
+
+    <template is="dom-repeat" items="[[questions]]" as="question">
+
+      <post-question question-path="/users/questionSets/[[user.uid]]/[[questionSetKey]]/questions/[[question.$key]]"></post-question>
+
+    </template>
+
+
+    <paper-toast raised id="toast" text=""></paper-toast>
+
+  </template>
+
+  <script>
+    class MyEditquestionset extends Polymer.Element {
+      static get is() { return 'my-editquestionset'; }
+
+      static get properties() {
+        return {
+          user: Object,
+          routeData: Object,
+          route: Object,
+          questionSetKey: {
+            type: String,
+            computed: 'getQuestionSetKey(routeData)'
+          },
+          questions: Object,
+          headerImage: {
+            type: String,
+            notify: true
+          },
+          questionSet: {
+            type: Object,
+            observer: 'changePageTitle'
+          },
+          pageTitle: {
+            type: String,
+            notify: true
+          },
+          selected: { //used to determine if selected by iron pages as the current page
+            type: Boolean
+          },
+          selected: { //used to determine if selected by iron pages as the current page
+            type: Boolean,
+            observer: 'changePageTitle'
+          },
+          isCoorporate: {
+            type: Boolean,
+            notify:true
+          }
+        };
+      }
+
+      changePageTitle(){
+        if(this.selected){
+          this.pageTitle = this.setPageTitle();
+          if(this.questionSet != null){
+            if(this.questionSet.meta != null){
+              if(this.questionSet.meta.headerImage != null){
+                if(this.questionSet != null) this.headerImage = this.questionSet.meta.headerImage;
+              }
+            }
+          }
+        }
+      }
+
+      setPageTitle(){
+        this.pageTitle = "";
+        this.isCoorporate = true;
+        if(this.questionSet == null) return null;
+        if(this.questionSet.meta == null) return null;
+        if(this.questionSet.meta.title == null) return null;
+        if(this.questionSet.meta.title == "") return null;
+        return this.questionSet.meta.title;
+      }
+
+      setQuestionSetMeta(){
+        const toast = this.$.toast;
+
+        this.$.questionSetDocument.ref.child('meta').child('title').set(this.$.questionTitle.value).then(function(){
+          toast.text = "アンケートの基本情報を更新しました"
+          toast.open();
+        });
+        this.$.questionSetDocument.ref.child('meta').child('desc').set(this.$.questionDesc.value).then(function(){
+        });
+
+        this.uploadImage();
+      }
+
+      getQuestionSetKey(){
+        return this.routeData.questionKey;
+      }
+
+      createQuestion(){
+
+        var question = {
+          meta: {
+            question: ""
+          }
+        }
+
+        var toast = this.$.toast;
+
+        this.$.questionSetDocument.ref.child('questions').push(question).then(function(){
+          toast.text = "質問を追加しました";
+          toast.open();
+        });
+      }
+
+      uploadImage(){
+        // Get a reference to the storage service, which is used to create references in your storage bucket
+        var storage = firebase.app("drink").storage();
+
+        // Create a storage reference from our storage service
+        var storageRef = storage.ref();
+
+        console.log(storageRef);
+      }
+
+      _computeSort(a, b) {
+        // http://stackoverflow.com/questions/33953938/polymer-1-0-sorting-dom-repeat
+        if (a.$key == b.$key) {
+          return 0;
+        }
+        return a.$key > b.$key ? -1 : 1;
+      }
+
+    }
+
+    window.customElements.define(MyEditquestionset.is, MyEditquestionset);
+  </script>
+</dom-module>

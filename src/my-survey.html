@@ -1,0 +1,267 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="poll-result.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-survey">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      #question-list{
+        list-style-type:none;
+        margin:0;
+        padding:0;
+      }
+
+      paper-spinner-lite[active] {
+        display: block;
+        width:50px;
+        height:50px;
+        margin: 10px auto;
+        --paper-spinner-layer-1-color: var(--app-primary-color);
+        --paper-spinner-layer-2-color: var(--app-primary-color);
+        --paper-spinner-layer-3-color: var(--app-primary-color);
+        --paper-spinner-layer-4-color: var(--app-primary-color);
+      }
+
+      #spinner{
+        margin:200px auto 0 auto;
+      }
+
+      paper-spinner-lite {
+        display: none;
+      }
+
+      #loadNew{
+        margin:8px;
+        display:block;
+        text-align:center;
+        -webkit-transition:max-height 0.2s;
+        transition:max-height 0.2s;
+        padding:0;
+        max-height:0;
+        overflow:hidden;
+      }
+
+      #loadNew.active{
+        padding:16px;
+        max-height:50px;
+      }
+
+      .card{
+        margin:8px;
+      }
+
+      @media screen and (min-width:840px){
+        #question-list{
+          display:-webkit-flex;
+          display:flex;
+          -webkit-justify-content: space-between;
+          justify-content: space-between;
+          -webkit-flex-wrap:wrap;
+          flex-wrap:wrap;
+          -webkit-flex-direction:row;
+          flex-direction:row;
+        }
+
+        .question{
+          width:50%;
+        }
+
+        #loadNew{
+          width:100%;
+        }
+      }
+
+      @media screen and (min-width:1200px){
+        .question{
+          width:33.3%;
+        }
+      }
+
+      @media screen and (min-width:1500px){
+        .question{
+          width:25%;
+        }
+
+      @media screen and (min-width:1800px){
+        .question{
+          width:300px;
+        }
+      }
+    </style>
+
+    <app-route
+      route="{{route}}"
+      pattern="/:surveyUid/:questionSetKey"
+      data="{{routeData}}">
+    </app-route>
+
+    <firebase-auth 
+      app-name="drink"
+      id="auth" 
+      user="{{user}}" 
+      on-error="handleError">
+    </firebase-auth>
+
+    <firebase-document
+      app-name="drink"
+      id="questionSetDocument"
+      path="/users/questionSets/[[surveyUid]]/[[questionSetKey]]"
+      data="{{questionSet}}">
+    </firebase-document>
+
+    <firebase-query
+      app-name="drink"
+      path="/users/questionSets/[[user.uid]]/[[questionSetKey]]/questions"
+      data="{{questions}}">
+    </firebase-query>
+
+    <div hidden$="[[!questionSet.meta.desc]]" class="card">[[questionSet.meta.desc]]</div>
+
+    <template is="dom-repeat" items="[[questions]]" as="question">
+        <poll-result class="question" survey-uid="[[surveyUid]]" question-path="/users/questionSets/[[surveyUid]]/[[questionSetKey]]/questions/[[question.$key]]"></poll-result>
+    </template>
+
+
+    <paper-toast raised id="toast" text=""></paper-toast>
+
+  </template>
+
+  <script>
+    class MySurvey extends Polymer.Element {
+      static get is() { return 'my-survey'; }
+
+      static get properties() {
+        return {
+          user: Object,
+          routeData: {
+            type: Object,
+            observer: 'setSurveyData'
+          },
+          route: Object,
+          questionSetKey: {
+            type: String,
+            computed: 'getQuestionSetKey(routeData)'
+          },
+          surveyUid: String,
+          questionSetKey: String,
+          questions: Object,
+          headerImage: {
+            type: String,
+            notify: true
+          },
+          questionSet: {
+            type: Object,
+            observer: 'changePageTitle'
+          },
+          pageTitle: {
+            type: String,
+            notify: true
+          },
+          questionSets: Object,
+          selected: { //used to determine if selected by iron pages as the current page
+            type: Boolean
+          },
+          selected: { //used to determine if selected by iron pages as the current page
+            type: Boolean,
+            observer: 'changePageTitle'
+          },
+          isCoorporate: {
+            type: Boolean,
+            notify:true
+          }
+        };
+      }
+
+      setSurveyData(){
+        this.surveyUid = this.routeData.surveyUid;
+        this.questionSetKey = this.routeData.questionSetKey;
+      }
+
+      changePageTitle(){
+        if(this.selected){
+          this.pageTitle = this.setPageTitle();
+          if(this.questionSet != null){
+            if(this.questionSet.meta != null){
+              if(this.questionSet.meta.headerImage != null){
+                if(this.questionSet != null) this.headerImage = this.questionSet.meta.headerImage;
+              }
+            }
+          }
+        }
+      }
+
+      setPageTitle(){
+        this.isCoorporate = true;
+        if(this.questionSet == null) return null;
+        if(this.questionSet.meta == null) return null;
+        if(this.questionSet.meta.title == null) return null;
+        if(this.questionSet.meta.title == "") return null;
+        return this.questionSet.meta.title;
+      }
+
+      setQuestionSetMeta(){
+        var meta = {
+          title: this.$.questionTitle.value,
+          desc: this.$.questionDesc.value
+        }
+
+        const toast = this.$.toast;
+
+        this.$.questionSetDocument.ref.child('meta').set(meta).then(function(){
+          toast.text = "アンケートの基本情報を更新しました"
+          toast.open();
+        });
+
+        this.uploadImage();
+      }
+
+      getQuestionSetKey(){
+        return this.routeData.questionKey;
+      }
+
+      createQuestion(){
+
+        var question = {
+          meta: {
+            question: ""
+          }
+        }
+
+        var toast = this.$.toast;
+
+        this.$.questionSetDocument.ref.child('questions').push(question).then(function(){
+          toast.text = "質問を追加しました";
+          toast.open();
+        });
+      }
+
+      uploadImage(){
+        // Get a reference to the storage service, which is used to create references in your storage bucket
+        var storage = firebase.app("drink").storage();
+
+        // Create a storage reference from our storage service
+        var storageRef = storage.ref();
+      }
+
+      _computeSort(a, b) {
+        // http://stackoverflow.com/questions/33953938/polymer-1-0-sorting-dom-repeat
+        if (a.$key == b.$key) {
+          return 0;
+        }
+        return a.$key > b.$key ? -1 : 1;
+      }
+
+    }
+
+    window.customElements.define(MySurvey.is, MySurvey);
+  </script>
+</dom-module>

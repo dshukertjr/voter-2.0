@@ -1,0 +1,310 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="my-icons.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="post-question">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 8px;
+        list-style-type:none;
+        -webkit-animation: fadeIn 0.2s 1;
+        animation: fadeIn 0.2s 1;
+      }
+
+      .choiceWrapper{
+        position:relative;
+        font-size:0;
+        margin:4px 0;
+      }
+
+      h3{
+        margin-top:0;
+        font-weight:300;
+      }
+
+      .choiceBar{
+        min-width:1px;
+        width:0%;
+        background: var(--app-primary-color);
+        background: #ccc;
+        -webkit-transition:width 0.2s;
+        transition:width 0.2s;
+        border-top-right-radius:5px;
+        border-bottom-right-radius:5px;
+        position:absolute;
+        left:0;
+        z-index:0;
+        opacity:0.5;
+        height:100%;
+      }
+
+      .choiceBar.myChoice{
+        background: var(--app-primary-color);
+      }
+
+      .barContent{
+        max-width:100%;
+        color: #000;
+        position:relative;
+        font-size:14px;
+        display:-webkit-flex;
+        display:flex;
+        justify-content: space-between;
+        -webkit-justify-content: space-between;
+      }
+
+      .choiceValue{
+        display:none;
+      }
+
+      .barContent>div{
+        max-width:100%;
+        padding:2px 4px 2px 4px;
+      }
+
+      .choices-wrapper{
+        -webkit-justify-content:space-between;
+        justify-content:space-between;
+      }
+
+      .choice {
+        text-transform: none;
+        margin:8px 0;
+        display:block;
+        text-align:center;
+      }
+
+      .comment{
+        padding:4px;
+        min-width:40px;
+        background: var(--app-primary-color);
+        color:#fff;
+        position:relative;
+        margin:4px 0 14px 0;
+        border-radius:4px;
+        display:inline-block;
+        -webkit-animation: fadeIn 0.2s 1;
+        animation: fadeIn 0.2s 1;
+      }
+
+      .comment:after{
+        content:"";
+        display:block;
+        border-top: 10px solid var(--app-primary-color);
+        border-right: 10px solid transparent;
+        position:absolute;
+        left:10px;
+        top:99%
+      }
+
+      #commentBody{
+        -webkit-flex-grow:1;
+        flex-grow:1;
+      }
+
+      #commentButton{
+        color:var(--app-primary-color);
+      }
+
+      #comment-text-box{
+        -webkit-align-items:flex-end;
+        align-items:flex-end;
+      }
+
+      paper-toast{
+        min-width: auto;
+      }
+    </style>
+
+    <firebase-auth 
+      app-name="drink"
+      id="auth" 
+      user="{{user}}" 
+      on-error="handleError">
+    </firebase-auth>
+
+    <firebase-document
+      app-name="drink"
+      id="questionDocument"
+      path="[[questionPath]]"
+      data="{{question}}">
+    </firebase-document>
+
+
+    <div class="card">
+
+      <paper-button on-tap="toggleIronCollapse" raised>[[questionButtonText]]</paper-button>
+
+      <iron-collapse id="questionTexts">
+
+        <paper-input id="question" label="質問" value="[[question.meta.question]]"></paper-input>
+
+        <paper-input id="choice1" class="choices" label="選択肢 1" value="[[question.meta.choice1]]"></paper-input>
+
+        <paper-input id="choice2" class="choices" label="選択肢 2" value="[[question.meta.choice2]]"></paper-input>
+
+        <paper-button id="reveal3" on-tap="reveal3" hidden$="[[question.meta.choice3]]"><iron-icon icon="my-icons:add" prefix></iron-icon>追加</paper-button>
+        <paper-input id="choice3" class="choices" label="選択肢 3（省略可）" value="[[question.meta.choice3]]" hidden$="[[!question.meta.choice3]]"></paper-input>
+
+        <paper-button id="reveal4" on-tap="reveal4" hidden$="[[!choice4Present]]"><iron-icon icon="my-icons:add" prefix></iron-icon>追加</paper-button>
+        <paper-input id="choice4" class="choices" label="選択肢 4（省略可）" value="[[question.meta.choice4]]" hidden$="[[!question.meta.choice4]]"></paper-input>
+
+        <paper-button id="reveal5" on-tap="reveal5" hidden$="[[!choice5Present]]"><iron-icon icon="my-icons:add" prefix></iron-icon>追加</paper-button>
+        <paper-input id="choice5" class="choices" label="選択肢 5（省略可）" value="[[question.meta.choice5]]" hidden$="[[!question.meta.choice5]]"></paper-input>
+        <div class="buttons">
+          <paper-button on-tap="post" class="primaryBtn" raised>投稿</paper-button>
+          <paper-button on-tap="deleteQuestion">削除</paper-button>
+        </div>
+
+      </iron-collapse>
+    </div>
+
+  
+    <paper-toast raised id="toast" text=""></paper-toast>
+
+
+  </template>
+
+  <script>
+    class PostQuestion extends Polymer.Element {
+      static get is() { return 'post-question'; }
+      static get properties() {
+        return {
+          user: {
+            type: Object
+          },
+          question: {
+            type: Object,
+            observer: 'some'
+          },
+          questionPath: {
+            type: String
+          },
+          showComment: {
+            type: Boolean,
+            value: false
+          },
+          questionButtonText: {
+            type: String,
+            computed: 'buttonText(question.meta.question)'
+          },
+          choice4Present: {
+            //for determining if the add more button for choice 4 should be visible
+            type: Boolean,
+            computed: 'choice4Check(question)'
+          },
+          choice5Present: {
+            //for determining if the add more button for choice 5 should be visible
+            type: Boolean,
+            computed: 'choice5Check(question)'
+          },
+        };
+      }
+
+      some(){
+        console.log(this.question);
+      }
+
+      choice4Check(){
+        if(this.question == null) return false;
+        if(this.question.meta == null) return false;
+        return this.question.meta.choice3 != null && this.question.meta.choice4 == null;
+      }
+
+      choice5Check(){
+        if(this.question == null) return false;
+        if(this.question.meta == null) return false;
+        return this.question.meta.choice3 != null && this.question.meta.choice4 != null && this.question.meta.choice5 == null;
+      }
+
+      toggleIronCollapse(){
+        this.$.questionTexts.toggle();
+      }
+
+      buttonText(){
+        const defaultText = "新しい質問";
+        if(this.question == null) return defaultText;
+        if(this.question.meta == null) return defaultText;
+        if(this.question.meta.question == null) return defaultText;
+        if(this.question.meta.question == "") return defaultText;
+        return this.question.meta.question;
+      }
+
+       post() {
+        console.log(this.$.questionDocument.path);
+        console.log(this.$.questionDocument.ref);
+        var question = {
+          "meta": {
+            "Uid": this.user.uid,
+            "question": this.$.question.value,
+            "choice1": this.$.choice1.value,
+            "choice2": this.$.choice2.value
+          }
+        };
+        // if(this.$.afterMessage.value != null) data["afterMessage"] = this.$.afterMessage.value;
+        if(this.$.choice3.value != null) question["meta"]["choice3"] = this.$.choice3.value;
+        if(this.$.choice4.value != null) question["meta"]["choice4"] = this.$.choice4.value;
+        if(this.$.choice5.value != null) question["meta"]["choice5"] = this.$.choice5.value;
+
+        const toast = this.$.toast;
+
+        this.$.questionDocument.ref.set(question).then(function(){
+          toast.text = "質問の変更が完了しました";
+          toast.open();
+        });
+
+        this.toggleIronCollapse();
+
+      }
+
+      reveal3() {
+        //reveals the third choice input
+        this.$.choice3.hidden = false;
+        this.$.reveal4.hidden = false;
+        this.$.reveal3.hidden = true;
+      }
+
+        //reveals the fourth choice input
+      reveal4() {
+        this.$.choice4.hidden = false;
+        this.$.reveal5.hidden = false;
+        this.$.reveal4.hidden = true;
+      }
+
+        //reveals the fifth choice input
+      reveal5() {
+        this.$.choice5.hidden = false;
+        this.$.reveal5.hidden = true;
+      }
+
+      deleteQuestion(){
+
+        var r = confirm("本当にその質問を削除してもいいですか？");
+        if (r == true) {
+          var question = {}
+
+          const toast = this.$.toast;
+          const that = this;
+
+          this.$.questionDocument.ref.remove().then(function(){
+            toast.text = "質問の削除が完了しました。";
+            toast.open();
+            that.toggleIronCollapse();
+          });
+        }
+      }
+
+
+    }
+
+    window.customElements.define(PostQuestion.is, PostQuestion);
+  </script>
+</dom-module>

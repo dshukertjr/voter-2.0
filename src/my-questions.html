@@ -129,14 +129,14 @@
         persisted-data="{{persistedData}}">
     </app-indexeddb-mirror>
 
-    <ul id="question-list">
+    <div id="question-list">
       <paper-button class="card" id="loadNew" on-tap="loadNew">Load [[newQuestionNum]] More Questions</paper-button>
 
       <template is="dom-repeat" items="[[persistedData]]" sort="_computeSort" as="question">
-        <poll-result on-textarea-focused="togglePaperFab" class="question" questionkey="[[question.$key]]"></poll-result>
+        <poll-result on-textarea-focused="togglePaperFab" class="question" question-key="[[question.$key]]" question-path="/questions/[[question.$key]]"></poll-result>
       </template>
 
-    </ul>
+    </div>
 
     <paper-spinner-lite id="spinner" active></paper-spinner-lite>
 
@@ -188,6 +188,10 @@
           persistedData: {
             type: Object,
             observer: 'showdata'
+          },
+          isCoorporate: {
+            type: Boolean,
+            notify:true
           }
         };
       }
@@ -199,6 +203,7 @@
       setPageTitle(){
         if(this.selected){
           this.pageTitle = "Timeline";
+          this.isCoorporate = false;
         }
       }
 

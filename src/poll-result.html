@@ -6,6 +6,7 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="my-icons.html">
 <link rel="import" href="shared-styles.html">
@@ -124,18 +125,12 @@
       paper-toast{
         min-width: auto;
       }
-
-      @media screen and (min-width:840px){
-        :host {
-          height:100%;
-        }
-      }
     </style>
 
     <firebase-document
       app-name="drink"
       id="questionDocument"
-      path="/questions/[[questionkey]]"
+      path="[[questionPath]]"
       data="{{question}}">
     </firebase-document>
 
@@ -148,7 +143,7 @@
    <firebase-query
       app-name="drink"
       id="commentQuery"
-      path="/questions/[[questionkey]]/comments"
+      path="[[questionPath]]/comments"
       limit-to-last="[[commentNum]]"
       data="{{comments}}">
     </firebase-query>
@@ -162,13 +157,13 @@
     </firebase-auth>
 
     <app-indexeddb-mirror
-        key="[[questionkey]]"
+        key="[[questionKey]]"
         session="[[user.uid]]"
         data="[[question]]"
         persisted-data="{{persistedData}}">
     </app-indexeddb-mirror>
 
-    <li class="card question" id="card">
+    <div class="card question" id="card">
       <h3 id="questionTitle" class="content">[[persistedData.meta.question]]</h3>
 
       <div id="answerButtons" class="choices-wrapper flex" hidden="true">
@@ -235,7 +230,7 @@
 
         <iron-collapse id="comments" opened$="[[showComment]]">
           <div id="comment-text-box" class="flex-left-right">
-            <paper-textarea on-value-changed="textareaChanged" maxlength="255" on-focused-changed="commentFocus" id="commentBody" label="Leave a comment"></paper-textarea>
+            <paper-textarea on-value-changed="textareaChanged" maxlength="255" on-focused-changed="commentFocus" id="commentBody" label="コメントを残しましょう"></paper-textarea>
             <paper-icon-button hidden$="[[!commentBodyLength]]" id="commentButton" on-tap="postComment" icon="my-icons:send"></paper-icon-button>
           </div>
           <template is="dom-repeat" items="[[comments]]" sort="_computeSort" as="comment">
@@ -244,13 +239,13 @@
             </div>
           </template>
           <div class="centerBtnWrapper" id="seeAllWrapper" hidden$="[[!commentNum]]">
-            <a href="/question/[[questionkey]]"><paper-button>See all comments</paper-button></a>
+            <a href="/question/[[questionKey]]"><paper-button>See all comments</paper-button></a>
           </div>
         </iron-collapse>
   
       </div>
 
-    </li>
+    </div>
 
     <paper-toast raised id="toast" text="ゲストとしてログイン中..."></paper-toast>
 
@@ -270,7 +265,9 @@
             type: Object,
             observer: '_questionChanged'
           },
-          questionkey: String,
+          questionPath: String,
+          questionKey: String,
+          surveyUid: String,
           showComment: {
             type: Boolean,
             value: false
@@ -341,7 +338,7 @@
       postComment(){
         const body = this.$.commentBody.value;
         if(body == null) return;
-        const questionKey = this.questionkey;
+        const questionKey = this.questionKey;
         const comment = {
           body: body,
           Uid: this.user.uid
@@ -418,6 +415,8 @@
       //return the percent vote for that chioce
       _computeAnswerPercent(choice){
         var total = this._countChoice(1) + this._countChoice(2) + this._countChoice(3) + this._countChoice(4) + this._countChoice(5);
+        if(total == null) return 0;
+        if(total == 0) return 0;
         var percent = Math.round( this._countChoice(choice) * 100 / total );
         return percent;
       }
@@ -462,6 +461,9 @@
       _checkAnswered(){
         if(!this.user) return false;
 
+        if(this.questionKey == null && this.surveyUid === this.user.uid) return true;
+
+
         const uid = this.user.uid;
 
 
@@ -489,7 +491,7 @@
       answer(e) {
         var choice = e.target.getAttribute('data-choice');
         choice = parseInt(choice);
-        var questionKey = this.questionkey;
+        var questionKey = this.questionKey;
         const questionDocument = this.$.questionDocument;
         const userPrivate = this.$.userPrivate;
         const user = this.user;
@@ -509,12 +511,12 @@
             var path = "/users/private/" + response.uid;
             userPrivate.path = path;
             questionDocument.ref.child('answers').child(response.uid).set(answer);
-            userPrivate.ref.child('private').child('answers').child(questionKey).set(answer);
+            if(questionKey != null) userPrivate.ref.child('private').child('answers').child(questionKey).set(answer);
           });
         }
         else{
           questionDocument.ref.child('answers').child(user.uid).set(answer);
-          userPrivate.ref.child('private').child('answers').child(questionKey).set(answer);
+          if(questionKey != null) userPrivate.ref.child('private').child('answers').child(questionKey).set(answer);
         }
       }
 

@@ -9,8 +9,61 @@
       },
       "private": {//only allow users with coorporate true to read users' private information
         "$uid": {
-          ".read": "false",
+          ".read": "$uid === auth.uid || root.child('users').child('coorporate').child(auth.uid).child('isCoorporate').val() == true",
           ".write": "$uid === auth.uid"
+        }
+      },
+      "coorporate": {
+        "$uid": {
+          ".read": "true",
+          ".write": "false"
+        }
+      },
+      "questionSets": {
+        "$coorporateid": {
+          ".read": "$coorporateid === auth.uid",
+          ".write": "$coorporateid === auth.uid",
+          "$questionSetId": {
+            "meta": {
+              ".read": "true"
+            },
+            "questions": {
+              "$questionId": {
+                "meta": {
+                  ".read": "true"
+                },
+                "answers": {
+                  "$uid": {
+                    ".write": "auth != null && $uid === auth.uid && ( data.child('Uid').val() === auth.uid || !data.exists() )",
+                    "choice": {
+                      ".validate": "newData.isNumber()"
+                    },
+                    "$other": {
+                      ".validate": "false"
+                    }
+                  }
+                },
+                "comments": {
+                  ".read": "auth != null",
+                  "$cid": {
+                    ".write": "auth != null",
+                    "Uid": {
+                      ".validate": "newData.val() === auth.uid"
+                    },
+                    "body": {
+                      ".validate": "newData.isString()"
+                    },
+                    "$other": {
+                      ".validate": "false"
+                    }
+                  }
+                },
+                "$other": {
+                  ".validate": "false"
+                }
+              }
+            }
+          }
         }
       }
     },

@@ -48,9 +48,9 @@
       data="{{question}}">
     </firebase-query>
 
-    <ul id="question-list">
-      <poll-result question-title="{{pageTitle}}" comment-num="null" show-comment="true" class="question" questionkey="[[questionKey]]"></poll-result>
-    </ul>
+    <div id="question-list">
+      <poll-result question-title="{{pageTitle}}" comment-num="null" show-comment="true" class="question" question-key="[[questionKey]]" question-path="/questions/[[questionKey]]"></poll-result>
+    </div>
 
   </template>
 
@@ -61,9 +61,8 @@
       static get properties() {
         return {
 
-          routeData: {
-            type: Object
-          },
+          routeData: Object,
+          route: Object,
           questionKey: {
             type: String,
             computed: 'getQuestionKey(routeData)'
@@ -72,10 +71,25 @@
             type: String,
             notify: true
           },
+          selected: { //used to determine if selected by iron pages as the current page
+            type: Boolean,
+            observer: 'setPageTitle'
+          },
+          isCoorporate: {
+            type: Boolean,
+            notify:true
+          }
         };
       }
 
+      setPageTitle(){
+        if(this.selected){
+          this.isCoorporate = false;
+        }
+      }
+
       getQuestionKey(){
+        console.log(this.routeData);
         return this.routeData.questionKey;
       }
       

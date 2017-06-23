@@ -87,7 +87,10 @@
 
       static get properties() {
         return {
-          user: Object,
+          user: {
+            type: Object,
+            observer: 'setPageTitle'
+          },
           firebase: Object,
           userPublic: Object,
           userPrivate: Object,
@@ -104,13 +107,22 @@
             type: Boolean, 
             computed: 'checkUniqueUser(user)',
             value: false
+          },
+          isCoorporate: {
+            type: Boolean,
+            notify:true
           }
         };
       }
 
       setPageTitle(){
         if(this.selected){
-          this.pageTitle = "User Settings";
+          this.isCoorporate = false;
+          if(this.isUniqueUser){
+            this.pageTitle = "User Settings";
+          }else{
+            this.pageTitle = "Login";
+          }
         }
       }
 
@@ -127,11 +139,19 @@
           //if not signed in, sign in first
           this.$.auth.signOut();
         }
+
+        toast.text = "ログイン中...";
+        toast.open();
+
         this.$.auth.signInWithEmailAndPassword(email, password)
         .then(function(response){
-          toast.text = "ログインが完了しました！";
+          toast.text = "ログインが完了しました";
           toast.open();
+          email = null;
+          password = null;
         }, function(error){
+          toast.text = "ログインできませんでした";
+          toast.open();
           console.log(error);
         });
       }
