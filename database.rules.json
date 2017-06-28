@@ -24,6 +24,7 @@
           ".read": "$coorporateid === auth.uid",
           ".write": "$coorporateid === auth.uid",
           "$questionSetId": {
+            ".read": "true",
             "meta": {
               ".read": "true"
             },

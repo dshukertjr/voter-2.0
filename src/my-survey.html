@@ -80,6 +80,27 @@
         }
       }
 
+      @media screen and (min-width:840px){
+        #question-list{
+          display:-webkit-flex;
+          display:flex;
+          -webkit-justify-content: space-between;
+          justify-content: space-between;
+          -webkit-flex-wrap:wrap;
+          flex-wrap:wrap;
+          -webkit-flex-direction:row;
+          flex-direction:row;
+        }
+
+        .question{
+          width:50%;
+        }
+
+        #loadNew{
+          width:100%;
+        }
+      }
+
       @media screen and (min-width:1200px){
         .question{
           width:33.3%;
@@ -120,16 +141,19 @@
 
     <firebase-query
       app-name="drink"
-      path="/users/questionSets/[[user.uid]]/[[questionSetKey]]/questions"
+      path="/users/questionSets/[[surveyUid]]/[[questionSetKey]]/questions"
       data="{{questions}}">
     </firebase-query>
 
     <div hidden$="[[!questionSet.meta.desc]]" class="card">[[questionSet.meta.desc]]</div>
 
-    <template is="dom-repeat" items="[[questions]]" as="question">
-        <poll-result class="question" survey-uid="[[surveyUid]]" question-path="/users/questionSets/[[surveyUid]]/[[questionSetKey]]/questions/[[question.$key]]"></poll-result>
-    </template>
+    <div id="question-list">
+      <template is="dom-repeat" items="[[questions]]" as="question">
+          <poll-result class="question" survey-uid="[[surveyUid]]" question-path="/users/questionSets/[[surveyUid]]/[[questionSetKey]]/questions/[[question.$key]]"></poll-result>
+      </template>
+    </div>
 
+  
 
     <paper-toast raised id="toast" text=""></paper-toast>
 

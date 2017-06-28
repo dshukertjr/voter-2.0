@@ -147,10 +147,12 @@
 
       setQuestionSetMeta(){
         const toast = this.$.toast;
+        const that = this;
 
         this.$.questionSetDocument.ref.child('meta').child('title').set(this.$.questionTitle.value).then(function(){
           toast.text = "アンケートの基本情報を更新しました"
           toast.open();
+          that.changePageTitle();
         });
         this.$.questionSetDocument.ref.child('meta').child('desc').set(this.$.questionDesc.value).then(function(){
         });

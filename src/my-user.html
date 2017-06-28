@@ -173,21 +173,35 @@
             console.log(error);
           });
         }else{
-          if(this.user.isAnonymous){
-            //merge account
-            console.log(firebase.auth());
-            console.log(firebase.auth);
-            console.log(auth.currentUser);
 
-            var credential = firebase.auth.EmailAuthProvider.credential(email, password);
-            console.log(credential);
-            auth.currentUser.link(credential).then(function(user) {
-              toast.text = "ユーザー登録が完了しました";
-              toast.open();
-            }, function(error) {
-              console.log("Error upgrading anonymous account", error);
-            });
-          }
+          //if not signed in, sign in first
+          this.$.auth.signOut();
+          
+          this.$.auth.createUserWithEmailAndPassword(email, password)
+          .then(function(response){
+            toast.text = "ユーザー登録が完了しました";
+            toast.open();
+          }, function(error){
+            console.log(error);
+          });
+
+
+
+          // if(this.user.isAnonymous){
+          //   //merge account
+          //   console.log(firebase.auth());
+          //   console.log(firebase.auth);
+          //   console.log(auth.currentUser);
+
+          //   var credential = firebase.auth.EmailAuthProvider.credential(email, password);
+          //   console.log(credential);
+          //   auth.currentUser.link(credential).then(function(user) {
+          //     toast.text = "ユーザー登録が完了しました";
+          //     toast.open();
+          //   }, function(error) {
+          //     console.log("Error upgrading anonymous account", error);
+          //   });
+          // }
         }
       }
 
