@@ -163,7 +163,7 @@
         persisted-data="{{persistedData}}">
     </app-indexeddb-mirror>
 
-    <div class="card question" id="card">
+    <div class="card question" id="card" hidden$="[[!persistedData.meta.question]]">
       <h3 id="questionTitle" class="content">[[persistedData.meta.question]]</h3>
 
       <div id="answerButtons" class="choices-wrapper flex" hidden="true">
