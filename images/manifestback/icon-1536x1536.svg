@@ -1,0 +1,7 @@
+<svg width="1536" height="1536">
+	<g id="choice">
+		<rect x="64" y="128" rx="64" ry="64" width="1408" height="256" fill="#03A9F4" />
+		<rect x="64" y="640" rx="64" ry="64" width="832" height="256" fill="#4fc3f7" />
+		<rect x="64" y="1152" rx="64" ry="64" width="256" height="256" fill="#b3e5fc" />
+	</g>
+</svg>
