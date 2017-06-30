@@ -1,11 +1,26 @@
 {
-  "name": "Voter",
-  "short_name": "Voter",
+  "name": "Choice",
+  "short_name": "Choice",
   "start_url": "./?homescreen=1",
   "display": "standalone",
   "theme_color": "#03A9F4",
   "background_color": "#fff",
   "icons": [
+    {
+      "src": "images/manifest/icon-144x144.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "images/manifest/icon-144x144.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "images/manifest/icon-144x144.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
     {
       "src": "images/manifest/icon-144x144.png",
       "sizes": "144x144",
