@@ -230,25 +230,25 @@
         <div class="flex-left-right">
           <div id="totalVotes"></div>
           <div id="commentBtn">
-            <paper-icon-button on-tap="toggleComments" icon="my-icons:comment">aa</paper-icon-button>
+            <paper-icon-button on-tap="openCommentTextBox" icon="my-icons:comment">aa</paper-icon-button>
             <span id="commentCount">[[commentCount]]</span>
           </div>
         </div>
 
-        <iron-collapse id="comments" opened$="[[showComment]]">
-          <div id="comment-text-box" class="flex-left-right">
-            <paper-textarea on-value-changed="textareaChanged" maxlength="255" on-focused-changed="commentFocus" id="commentBody" label="コメントを残しましょう"></paper-textarea>
-            <paper-icon-button hidden$="[[!commentBodyLength]]" id="commentButton" on-tap="postComment" icon="my-icons:send"></paper-icon-button>
-          </div>
+        <div id="comments">
           <template is="dom-repeat" items="[[comments]]" sort="_computeSort" as="comment">
             <div>
               <div class="comment">[[comment.body]]</div>
             </div>
           </template>
           <div class="centerBtnWrapper" id="seeAllWrapper" hidden$="[[!commentNum]]">
-            <a href="/question/[[questionKey]]"><paper-button>See all comments</paper-button></a>
+            <a href="/question/[[questionKey]]"><paper-button>もっとコメントを見る</paper-button></a>
           </div>
-        </iron-collapse>
+          <iron-collapse id="commentTextBox" class="flex-left-right">
+            <paper-textarea on-value-changed="textareaChanged" maxlength="255" on-focused-changed="commentFocus" id="commentBody" label="コメントを残しましょう"></paper-textarea>
+            <paper-icon-button hidden$="[[!commentBodyLength]]" id="commentButton" on-tap="postComment" icon="my-icons:send"></paper-icon-button>
+          </iron-collapse>
+        </div>
   
       </div>
 
@@ -275,10 +275,6 @@
           questionPath: String,
           questionKey: String,
           surveyUid: String,
-          showComment: {
-            type: Boolean,
-            value: false
-          },
           comments: Object,
           hidden: Boolean,
           commentCount: String,
@@ -286,7 +282,7 @@
           persistedData: Object,
           commentNum: {//number of comments shown
             type: Number,
-            value: 3
+            value: 2
           },
           commentBodyLength:{
             type: Number,
@@ -370,8 +366,13 @@
         this.$.commentBody.value = null;
       }
 
-      toggleComments(){
-        this.$.comments.toggle();
+      openCommentTextBox(){
+        this.$.commentTextBox.toggle()
+        const commentBody = this.$.commentBody
+        //I have to set timeout in order to focus to the textarea for some reason
+        setTimeout(function(){
+          commentBody.focus()
+        },201)
       }
 
       countComment(){
@@ -544,7 +545,7 @@
         if (a.$key == b.$key) {
           return 0;
         }
-        return a.$key > b.$key ? -1 : 1;
+        return a.$key > b.$key ? 1 : -1;
       }
 
 

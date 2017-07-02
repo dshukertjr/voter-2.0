@@ -1,5 +1,8 @@
 const functions = require('firebase-functions');
 
+const admin = require('firebase-admin');
+admin.initializeApp(functions.config().firebase);
+
 
 //sanitizes posted questions
 exports.sanitizeQuestion = functions.database
@@ -33,6 +36,28 @@ exports.sanitizeComment = functions.database
 		if(sanitize(comment.body)) includes = true;
 		if(includes) return event.data.adminRef.remove()
 	})
+
+
+// // notifying users for comments and stuff
+// exports.sanitizeComment = functions.database
+// 	.ref('/questions/{questionId}/comments/{commentId}')
+// 	.onWrite(event => {
+// 		const questionId = event.params.questionId
+// 		const commentId = event.params.commentId
+// 		const getSomethingPromise = admin.database().ref('/questions/' + questionId).once('value');
+
+// 	     return getSomethingPromise.then(results => {
+// 	        const question = results[0];
+
+//           Object.keys(question.comments).map(function(objectKey, index) {
+//           	//get the uid of the comment
+//           	var uid = question.comments[objectKey].Uid
+          	
+//           });
+
+//     	}
+
+// 	})
 
 
 function sanitize(s){
@@ -122,3 +147,5 @@ function sanitize(s){
 	}
 	return contains
 }
+
+

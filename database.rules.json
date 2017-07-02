@@ -133,6 +133,11 @@
         }
       }
     },
+    "notifications": {
+      "$uid": {
+        ".read": "$uid === auth.uid"
+      }
+    },
     "$other": {
       "$other": {
         ".validate": "false"

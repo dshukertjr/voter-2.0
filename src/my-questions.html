@@ -130,7 +130,7 @@
     </app-indexeddb-mirror>
 
     <div id="question-list">
-      <paper-button class="card" id="loadNew" on-tap="loadNew">Load [[newQuestionNum]] More Questions</paper-button>
+      <paper-button class="card" id="loadNew" on-tap="loadNew">新着[[newQuestionNum]]件の質問をロード</paper-button>
 
       <template is="dom-repeat" items="[[persistedData]]" sort="_computeSort" as="question">
         <poll-result on-textarea-focused="togglePaperFab" class="question" question-key="[[question.$key]]" question-path="/questions/[[question.$key]]"></poll-result>
@@ -186,18 +186,13 @@
             observer: 'setPageTitle'
           },
           persistedData: {
-            type: Object,
-            observer: 'showdata'
+            type: Object
           },
           isCoorporate: {
             type: Boolean,
             notify:true
           }
         };
-      }
-
-      showdata(){
-        console.log(this.persistedData);
       }
 
       setPageTitle(){
@@ -214,7 +209,6 @@
       }
 
       loadNew(){
-        console.log('loadNew called')
         if(this.canLoadNewQuestions){
           this.canLoadNewQuestions = false;
           this.$.loadNew.classList.remove('active');
@@ -225,33 +219,31 @@
 
       togglePaperFab(e){
         if(e.target.focused == true){
-          this.$.paperFab.hidden = true;
+          this.$.paperFab.hidden = true
         }else{
-          this.$.paperFab.hidden = false;
+          this.$.paperFab.hidden = false
         }
       }
 
       _listenToNewQuestions(){
-        console.log('_listenToNewQuestions called')
-        const loadNew = this.$.loadNew;
-        const thisElement = this;
-        const user = this.user;
-        const newestQuestionId = thisElement.newestQuestionId;
+        const loadNew = this.$.loadNew
+        const thisElement = this
+        const user = this.user
+        const newestQuestionId = thisElement.newestQuestionId
 
         //counts the number of newly added questions
         var listen = function(snapshot) {
-          console.log('listen called' + newestQuestionId)
-          var count = -1;
+          var count = -1
           var tempquestions = snapshot.val()
-          var loadOnce = true;
-          // console.log(tempquestions);
+          var loadOnce = true
+
           Object.keys(tempquestions).map(function(objectKey, index) {
             if(count >= 0){
               //if the question list contains question posted by this user, reload the question list
               if(tempquestions[objectKey].meta.Uid === user.uid && loadOnce){
                // thisElement.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId).limitToFirst(16).off('value', listen);
                 thisElement.loadNew();
-                loadOnce = false;
+                loadOnce = false
               }
             }
             count ++;
@@ -268,10 +260,8 @@
           return;
         }
 
-        console.log('Listenning ... ' + newestQuestionId)
         thisElement.$.questionQuery.ref.startAt(null, newestQuestionId).limitToFirst(16).on('value', listen);
         thisElement.addEventListener("reloaded", function(){
-          console.log('on reloaded called' + newestQuestionId)
           thisElement.$.questionQuery.ref.startAt(null, newestQuestionId).limitToFirst(16).off('value', listen);
         });
         //need to remove the added event here in the future
