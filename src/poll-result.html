@@ -241,8 +241,13 @@
               <div class="comment">[[comment.body]]</div>
             </div>
           </template>
-          <div class="centerBtnWrapper" id="seeAllWrapper" hidden$="[[!commentNum]]">
+
+<!--           <div class="centerBtnWrapper" id="seeAllWrapper" hidden$="[[!commentNum]]">
             <a href="/question/[[questionKey]]"><paper-button>もっとコメントを見る</paper-button></a>
+          </div>
+ -->
+          <div class="centerBtnWrapper" id="seeAllWrapper" hidden$="[[!commentNum]]">
+            <paper-button on-tap="loadAllComments">コメントを全て見る</paper-button>
           </div>
           <iron-collapse id="commentTextBox" class="flex-left-right">
             <paper-textarea on-value-changed="textareaChanged" maxlength="255" on-focused-changed="commentFocus" id="commentBody" label="コメントを残しましょう"></paper-textarea>
@@ -373,6 +378,10 @@
         setTimeout(function(){
           commentBody.focus()
         },201)
+      }
+
+      loadAllComments(){
+        this.commentNum = null;
       }
 
       countComment(){
