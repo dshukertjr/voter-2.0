@@ -21,6 +21,10 @@
         animation: fadeIn 0.2s 1;
       }
 
+      :host[hidden]{
+        display:none;
+      }
+
       #card{
         margin:0 8px 16px 8px;
       }
@@ -166,7 +170,7 @@
         persisted-data="{{persistedData}}">
     </app-indexeddb-mirror>
 
-    <div class="card question" id="card" hidden$="[[!persistedData.meta.question]]">
+    <div class="card question" id="card">
       <h3 id="questionTitle" class="content">[[persistedData.meta.question]]</h3>
 
       <div id="answerButtons" class="choices-wrapper flex" hidden="true">
@@ -276,8 +280,10 @@
             value: false
           },
           comments: Object,
+          hidden: Boolean,
           commentCount: String,
           focused: Boolean,
+          persistedData: Object,
           commentNum: {//number of comments shown
             type: Number,
             value: 3
@@ -317,6 +323,14 @@
         this._computeBarLength();
         this._colorMychoice();
         this.countComment();
+        this.toggleHost();
+      }
+
+      toggleHost(){
+        if(this.question == null) this.hidden = true
+        else if(this.question.meta == null) this.hidden = true
+        else if(this.question.meta.question == null) this.hidden = true
+        else this.hidden = false
       }
 
       textareaChanged(){
@@ -325,12 +339,14 @@
       }
 
       _colorMychoice(){
+        //reset all the colors first
+        if(this.$.results.querySelector('.myChoice')) this.$.results.querySelector('.myChoice').classList.remove('myChoice');
         if(!this.user) return;
+
         const uid = this.user.uid;
         if(!this.question.answers) return;
         if(!this.question.answers[uid]) return;
         const choice = this.question.answers[uid].choice;
-        if(this.querySelector('.myChoice')) this.querySelector('.myChoice').classList.remove('myChoice');
         if(choice == 1) this.$.choice1.querySelector('.choiceBar').classList.add('myChoice');
         if(choice == 2) this.$.choice2.querySelector('.choiceBar').classList.add('myChoice');
         if(choice == 3) this.$.choice3.querySelector('.choiceBar').classList.add('myChoice');

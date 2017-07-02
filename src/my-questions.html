@@ -214,6 +214,7 @@
       }
 
       loadNew(){
+        console.log('loadNew called')
         if(this.canLoadNewQuestions){
           this.canLoadNewQuestions = false;
           this.$.loadNew.classList.remove('active');
@@ -231,20 +232,24 @@
       }
 
       _listenToNewQuestions(){
+        console.log('_listenToNewQuestions called')
         const loadNew = this.$.loadNew;
         const thisElement = this;
         const user = this.user;
+        const newestQuestionId = thisElement.newestQuestionId;
 
         //counts the number of newly added questions
         var listen = function(snapshot) {
+          console.log('listen called' + newestQuestionId)
           var count = -1;
-          var tempquestions = snapshot.val();
+          var tempquestions = snapshot.val()
           var loadOnce = true;
           // console.log(tempquestions);
           Object.keys(tempquestions).map(function(objectKey, index) {
             if(count >= 0){
+              //if the question list contains question posted by this user, reload the question list
               if(tempquestions[objectKey].meta.Uid === user.uid && loadOnce){
-                thisElement.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId).limitToFirst(16).off('value', listen);
+               // thisElement.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId).limitToFirst(16).off('value', listen);
                 thisElement.loadNew();
                 loadOnce = false;
               }
@@ -262,9 +267,12 @@
           this.newQuestionNum = '0';
           return;
         }
-        thisElement.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId).limitToFirst(16).on('value', listen);
+
+        console.log('Listenning ... ' + newestQuestionId)
+        thisElement.$.questionQuery.ref.startAt(null, newestQuestionId).limitToFirst(16).on('value', listen);
         thisElement.addEventListener("reloaded", function(){
-          thisElement.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId).limitToFirst(16).off('value', listen);
+          console.log('on reloaded called' + newestQuestionId)
+          thisElement.$.questionQuery.ref.startAt(null, newestQuestionId).limitToFirst(16).off('value', listen);
         });
         //need to remove the added event here in the future
       }
@@ -320,8 +328,6 @@
 
         query.once('value').then(function(snapshot) {
 
-          thisElement.canLoadNewQuestions = false;
-
           var tempquestions = snapshot.val();
 
           if(tempquestions != null){
@@ -332,9 +338,12 @@
             thisElement.questions = tempquestions.concat(thisElement.questions);
 
             thisElement.dispatchEvent(new CustomEvent('reloaded'));
-            thisElement.newestQuestionId = thisElement.questions[thisElement.questions.length - 1].$key;
+            thisElement.newestQuestionId = tempquestions[tempquestions.length - 1].$key;
 
-          }          
+          }   
+
+          thisElement.canLoadNewQuestions = true;
+       
         });
       }
 
