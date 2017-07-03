@@ -93,12 +93,12 @@
       }
 
       .comment{
-        padding:4px;
+        padding:2px 4px;
         min-width:40px;
         background: var(--app-primary-color);
         color:#fff;
         position:relative;
-        margin:4px 0 14px 0;
+        margin:4px 0 8px 0;
         border-radius:4px;
         display:inline-block;
         -webkit-animation: fadeIn 0.2s 1;
@@ -109,12 +109,13 @@
       .comment:after{
         content:"";
         display:block;
-        border-top: 10px solid var(--app-primary-color);
-        border-right: 10px solid transparent;
+        border-top: 8px solid var(--app-primary-color);
+        border-right: 8px solid transparent;
         position:absolute;
-        left:10px;
+        left:8px;
         top:calc(100% - 1px);
       }
+
 
       #commentBody{
         -webkit-flex-grow:1;
