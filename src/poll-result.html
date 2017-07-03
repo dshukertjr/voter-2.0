@@ -103,6 +103,7 @@
         display:inline-block;
         -webkit-animation: fadeIn 0.2s 1;
         animation: fadeIn 0.2s 1;
+        font-size:0.8em;
       }
 
       .comment:after{
@@ -112,7 +113,7 @@
         border-right: 10px solid transparent;
         position:absolute;
         left:10px;
-        top:99%
+        top:calc(100% - 1px);
       }
 
       #commentBody{
@@ -151,7 +152,7 @@
       app-name="drink"
       id="commentQuery"
       path="[[questionPath]]/comments"
-      limit-to-last="[[commentNum]]"
+      limit-to-first="[[commentNum]]"
       data="{{comments}}">
     </firebase-query>
 
