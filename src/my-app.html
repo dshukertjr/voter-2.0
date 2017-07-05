@@ -10,10 +10,11 @@
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-messaging.html">
 <link rel="import" href="my-icons.html">
 
 <link rel="lazy-import" href="my-post.html">
@@ -112,7 +113,7 @@
       storage-bucket="drink-f8aff.appspot.com">
     </firebase-app>
 
-    <firebase-auth 
+    <firebase-auth
       app-name="drink"
       id="auth" 
       user="{{user}}"
@@ -122,10 +123,23 @@
 
     <firebase-document
       app-name="drink"
-      id="userDocument"
+      id="userPublic"
       path="/users/public/[[user.uid]]"
       data="{{userPublic}}">
     </firebase-document>
+
+    <firebase-document
+      app-name="drink"
+      id="userPrivate"
+      path="/users/private/[[user.uid]]"
+      data="{{userPrivate}}">
+    </firebase-document>
+
+    <firebase-messaging
+      id="messaging"
+      app-name="drink"
+      on-message="handleMessage">
+    </firebase-messaging>
 
     <app-location route="{{route}}"></app-location>
     <app-route
@@ -188,9 +202,11 @@
       </app-header-layout>
     </app-drawer-layout>
 
-    <paper-toast opened$="[[!online]]" id="toast" raised duration="0" text="オフラインです">
+    <paper-toast opened$="[[!online]]" id="offlineToast" raised duration="0" text="オフラインです">
       <paper-icon-button on-tap="closeToast" icon="my-icons:close"></paper-icon-button>
     </paper-toast>
+
+    <paper-toast raised id="toast" text=""></paper-toast>
 
   </template>
 
@@ -241,11 +257,11 @@
       }
 
       asignUserName(){
-        if(!this.user) return '';
-        if(this.userPublic == null) return 'ゲスト';
-        if(this.userPublic.userName == null) return 'ゲスト';
-        if(this.userPublic.userName == "") return 'ゲスト';
-        return this.userPublic.userName;
+        if(!this.user) return ''
+        if(this.userPublic == null) return 'ゲスト'
+        if(this.userPublic.userName == null) return 'ゲスト'
+        if(this.userPublic.userName == "") return 'ゲスト'
+        return this.userPublic.userName
       }
 
       constructor() {
@@ -274,7 +290,11 @@
       }
 
       closeToast(){
-        this.$.toast.close();
+        this.$.offlineToast.close();
+      }
+
+      handleMessage(){
+        
       }
 
       _pageChanged(page) {

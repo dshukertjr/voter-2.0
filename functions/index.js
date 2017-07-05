@@ -60,6 +60,88 @@ exports.sanitizeComment = functions.database
 // 	})
 
 
+
+
+
+
+
+
+//sends notification when receiving comment to the question the user posted
+exports.sendFollowerNotification = functions.database.ref('/questions/{questionId}/comments').onWrite(event => {
+
+  // If comment delete, exit the function
+  if (!event.data.val()) {
+  	return
+  }
+
+  const questionId = event.params.questionId
+  const comment = event.data.val()
+
+  // Get the meta data of this question
+  const questionMetaPromise = admin.database().ref(`/questions/${questionId}/meta`).once('value');
+
+  return Promise.all([questionMetaPromise]).then(results => {
+    const questionMeta = results[0]
+    const Uid = questionMeta.Uid
+
+    // Check if there are any device tokens.
+    if (!questionMeta) return console.log('questionMeta is empty');
+    if (!questionMeta.Uid) return console.log('Uid is empty');
+
+
+    // Listing all tokens.
+	const tokenPromise = admin.database().ref(`/users/private/${Uid}/token`).once('value');
+
+    // Send notifications to all tokens.
+	return Promise.all([tokenPromise]).then(results => {
+		const token = results[0]
+
+
+	    // Notification details.
+	    const payload = {
+	      notification: {
+	        title: 'あなたの質問にコメントがつきました！',
+	        body: `${comment.body}`,
+	        icon: '/images/manifest/icon-192x192.png',
+	        click_action: `/question/${questionId}`
+	      }
+	    };
+
+	    // Listing all tokens.
+	    // const tokens = Object.keys(tokensSnapshot.val());
+
+	    // Send notifications to all tokens.
+	    return admin.messaging().sendToDevice(token, payload).then(response => {
+	      // For each message check if there was an error.
+	      const tokensToRemove = [];
+	      response.results.forEach((result, index) => {
+	        const error = result.error;
+	        if (error) {
+	          console.error('Failure sending notification to', token, error);
+	          // Cleanup the tokens who are not registered anymore.
+	          if (error.code === 'messaging/invalid-registration-token' ||
+	              error.code === 'messaging/registration-token-not-registered') {
+	            // tokensToRemove.push(tokensSnapshot.ref.child(tokens[index]).remove());
+	          }
+	        }
+	      });
+	      return Promise.all(tokensToRemove);
+	    })
+    })
+  })
+})
+
+
+
+
+
+
+
+
+
+
+
+
 function sanitize(s){
 	prohibitedWords = [
 		"風俗",

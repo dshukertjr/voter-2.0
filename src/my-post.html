@@ -3,6 +3,8 @@
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-messaging.html">
 <link rel="import" href="my-icons.html">
 <link rel="import" href="shared-styles.html">
 
@@ -35,13 +37,21 @@
       limit-to-last="1">
     </firebase-query>
 
-    <firebase-query
+    <firebase-document
       app-name="drink"
-      id="userQuery"
-      path="/users/[[user.uid]]">
-    </firebase-query>
+      id="userPrivate"
+      path="/users/private/[[user.uid]]"
+      data="{{userPrivate}}">
+    </firebase-document>
+
+    <firebase-messaging
+      id="messaging"
+      app-name="drink"
+      token="{{token}}">
+    </firebase-messaging>
 
     <div class="card">
+
       <paper-textarea id="question" label="質問"></paper-textarea>
 
       <paper-textarea id="choice1" class="choices" label="選択肢 1"></paper-textarea>
@@ -83,6 +93,10 @@
           isCoorporate: {
             type: Boolean,
             notify:true
+          },
+          token: {
+            type: Object,
+            observer: 'storeToken'
           }
         };
       }
@@ -94,7 +108,23 @@
         }
       }
 
+      askNotificationPermission(){
+        this.$.messaging.requestPermission().then(function() {
+          //permission granted
+        }, function(err) {
+          //permission denied
+        });
+      }
+
+      storeToken(){
+        if(!this.user) return
+        if(!this.token) return
+        console.log('token stored')
+        this.$.userPrivate.ref.child("token").set(this.token);
+      }
+
        post() {
+        const thisElement = this
         var question = {
           meta: {
             "question": this.$.question.value,
@@ -103,21 +133,23 @@
           }
         };
         // if(this.$.afterMessage.value != null) data["afterMessage"] = this.$.afterMessage.value;
-        if(this.$.choice3.value != null) question["meta"]["choice3"] = this.$.choice3.value;
-        if(this.$.choice4.value != null) question["meta"]["choice4"] = this.$.choice4.value;
-        if(this.$.choice5.value != null) question["meta"]["choice5"] = this.$.choice5.value;
+        if(this.$.choice3.value != null) question["meta"]["choice3"] = this.$.choice3.value
+        if(this.$.choice4.value != null) question["meta"]["choice4"] = this.$.choice4.value
+        if(this.$.choice5.value != null) question["meta"]["choice5"] = this.$.choice5.value
 
-        var query = this.$.query;
+        var query = this.$.query
         if(!this.user){
           //if not signed in, sign in first
           this.$.auth.signInAnonymously()
           .then(function(response){
-            question["meta"]["Uid"] = response.uid;
-            query.ref.push(question);
+            question["meta"]["Uid"] = response.uid
+            query.ref.push(question)
+            thisElement.askNotificationPermission()
           });
         }else{
-          question["meta"]["Uid"] = this.user.uid;
-          query.ref.push(question);
+          question["meta"]["Uid"] = this.user.uid
+          query.ref.push(question)
+          thisElement.askNotificationPermission()
         }
 
 

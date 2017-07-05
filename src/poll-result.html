@@ -244,10 +244,6 @@
             </div>
           </template>
 
-<!--           <div class="centerBtnWrapper" id="seeAllWrapper" hidden$="[[!commentNum]]">
-            <a href="/question/[[questionKey]]"><paper-button>もっとコメントを見る</paper-button></a>
-          </div>
- -->
           <div class="centerBtnWrapper" id="seeAllWrapper" hidden$="[[!commentNum]]">
             <paper-button on-tap="loadAllComments">コメントを全て見る</paper-button>
           </div>
@@ -375,11 +371,13 @@
 
       openCommentTextBox(){
         this.$.commentTextBox.toggle()
-        const commentBody = this.$.commentBody
-        //I have to set timeout in order to focus to the textarea for some reason
-        setTimeout(function(){
-          commentBody.focus()
-        },201)
+
+        // // focusing does not work on iphone
+        // const commentBody = this.$.commentBody
+        // //I have to set timeout in order to focus to the textarea for some reason
+        // setTimeout(function(){
+        //   commentBody.focus()
+        // },201)
       }
 
       loadAllComments(){
@@ -403,7 +401,7 @@
           Object.keys(comments).map(function(objectKey, index) {
             count++;
           });
-          if(count < 4) {
+          if(count < 3) {
             this.$.seeAllWrapper.hidden = true;
           }else if(this.commentNum) {
             this.$.seeAllWrapper.hidden = false;
@@ -412,6 +410,7 @@
         }
       }
 
+      //fire textarea-focuesed event to make paper-fab dissappear
       commentFocus(){
         if(this.$.commentBody.focused == true){
           this.focused = true;
@@ -542,12 +541,12 @@
             var path = "/users/private/" + response.uid;
             userPrivate.path = path;
             questionDocument.ref.child('answers').child(response.uid).set(answer);
-            if(questionKey != null) userPrivate.ref.child('private').child('answers').child(questionKey).set(answer);
+            if(questionKey != null) userPrivate.ref.child(questionKey).set(answer);
           });
         }
         else{
           questionDocument.ref.child('answers').child(user.uid).set(answer);
-          if(questionKey != null) userPrivate.ref.child('private').child('answers').child(questionKey).set(answer);
+          if(questionKey != null) userPrivate.ref.child(questionKey).set(answer);
         }
       }
 
