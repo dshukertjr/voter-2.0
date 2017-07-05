@@ -4,7 +4,6 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
 <link rel="import" href="poll-result.html">
 <link rel="import" href="my-icons.html">
 <link rel="import" href="shared-styles.html">
@@ -121,18 +120,10 @@
       data="{{some}}">
     </firebase-query>
 
-    <app-indexeddb-mirror
-        key="questions"
-        session="[[user.uid]]"
-        data="[[questions]]"
-        log="true"
-        persisted-data="{{persistedData}}">
-    </app-indexeddb-mirror>
-
     <div id="question-list">
       <paper-button class="card" id="loadNew" on-tap="loadNew">新着[[newQuestionNum]]件の質問をロード</paper-button>
 
-      <template is="dom-repeat" items="[[persistedData]]" sort="_computeSort" as="question">
+      <template is="dom-repeat" items="[[questions]]" sort="_computeSort" as="question">
         <poll-result on-textarea-focused="togglePaperFab" class="question" question-key="[[question.$key]]" question-path="/questions/[[question.$key]]"></poll-result>
       </template>
 
@@ -184,9 +175,6 @@
           selected: { //used to determine if selected by iron pages as the current page
             type: Boolean,
             observer: 'setPageTitle'
-          },
-          persistedData: {
-            type: Object
           },
           isCoorporate: {
             type: Boolean,

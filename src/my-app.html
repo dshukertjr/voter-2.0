@@ -233,10 +233,7 @@
           routeData: Object,
           subroute: String,
           pageTitle: String,
-          user: {
-            type: Object,
-            observer: 'consoleUid'
-          },
+          user: Object,
           userPublic: Object,
           userName:{
             type: String,
@@ -260,11 +257,6 @@
         return [
           '_routePageChanged(routeData.page)',
         ];
-      }
-
-      consoleUid(){
-        if(!this.user) return
-        console.log('uid is ', this.user.uid)
       }
 
       asignUserName(){
