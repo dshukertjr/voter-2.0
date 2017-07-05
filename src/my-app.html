@@ -168,7 +168,10 @@
 
         <app-header id="appHeader" slot="header" condenses reveals effects="waterfall resize-title blend-background">
           <app-toolbar>
-            <a id="backArrow" hidden$="[[onMainPage]]" href="javascript:history.go(-1)"><paper-icon-button icon="my-icons:arrow-back"></paper-icon-button></a>
+
+<!--             <a id="backArrow" hidden$="[[onMainPage]]" href="javascript:history.go(-1)"><paper-icon-button icon="my-icons:arrow-back"></paper-icon-button></a>
+ -->
+            <a id="backArrow" hidden$="[[onMainPage]]" href="/"><paper-icon-button icon="my-icons:arrow-back"></paper-icon-button></a>
             <div id="menuButton" hidden$="[[!onMainPage]]"><paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button></div>
             <div id="mainTitle" condensed-title$="[[isCoorporate]]" main-title$="[[!isCoorporate]]">[[pageTitle]]</div>
             <div hidden$="[[!user]]"><a id="userName" href="/user">[[userName]]</a></div>
@@ -230,7 +233,10 @@
           routeData: Object,
           subroute: String,
           pageTitle: String,
-          user: Object,
+          user: {
+            type: Object,
+            observer: 'consoleUid'
+          },
           userPublic: Object,
           userName:{
             type: String,
@@ -254,6 +260,11 @@
         return [
           '_routePageChanged(routeData.page)',
         ];
+      }
+
+      consoleUid(){
+        if(!this.user) return
+        console.log('uid is ', this.user.uid)
       }
 
       asignUserName(){
@@ -294,7 +305,7 @@
       }
 
       handleMessage(){
-        
+
       }
 
       _pageChanged(page) {

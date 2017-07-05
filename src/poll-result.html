@@ -153,7 +153,7 @@
       app-name="drink"
       id="commentQuery"
       path="[[questionPath]]/comments"
-      limit-to-first="[[commentNum]]"
+      limit-to-last="[[commentNum]]"
       data="{{comments}}">
     </firebase-query>
 
@@ -541,12 +541,12 @@
             var path = "/users/private/" + response.uid;
             userPrivate.path = path;
             questionDocument.ref.child('answers').child(response.uid).set(answer);
-            if(questionKey != null) userPrivate.ref.child(questionKey).set(answer);
+            if(questionKey != null) userPrivate.ref.child('questions').child(questionKey).set(answer);
           });
         }
         else{
           questionDocument.ref.child('answers').child(user.uid).set(answer);
-          if(questionKey != null) userPrivate.ref.child(questionKey).set(answer);
+          if(questionKey != null) userPrivate.ref.child('questions').child(questionKey).set(answer);
         }
       }
 

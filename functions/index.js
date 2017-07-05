@@ -67,7 +67,7 @@ exports.sanitizeComment = functions.database
 
 
 //sends notification when receiving comment to the question the user posted
-exports.sendFollowerNotification = functions.database.ref('/questions/{questionId}/comments').onWrite(event => {
+exports.commentNotification = functions.database.ref('/questions/{questionId}/comments/{commendId}').onWrite(event => {
 
   // If comment delete, exit the function
   if (!event.data.val()) {
@@ -76,17 +76,20 @@ exports.sendFollowerNotification = functions.database.ref('/questions/{questionI
 
   const questionId = event.params.questionId
   const comment = event.data.val()
+  console.log("comment is ", comment)
 
   // Get the meta data of this question
   const questionMetaPromise = admin.database().ref(`/questions/${questionId}/meta`).once('value');
 
   return Promise.all([questionMetaPromise]).then(results => {
-    const questionMeta = results[0]
-    const Uid = questionMeta.Uid
+    const questionMeta = results[0].val()
 
     // Check if there are any device tokens.
     if (!questionMeta) return console.log('questionMeta is empty');
     if (!questionMeta.Uid) return console.log('Uid is empty');
+    const Uid = questionMeta.Uid
+
+    if(Uid === comment.Uid) return console.log('commented on their own question')
 
 
     // Listing all tokens.
@@ -94,7 +97,12 @@ exports.sendFollowerNotification = functions.database.ref('/questions/{questionI
 
     // Send notifications to all tokens.
 	return Promise.all([tokenPromise]).then(results => {
-		const token = results[0]
+		const token = results[0].val()
+
+		if(!token){
+			console.log("empty token")
+			return
+		}
 
 
 	    // Notification details.
@@ -103,7 +111,7 @@ exports.sendFollowerNotification = functions.database.ref('/questions/{questionI
 	        title: 'あなたの質問にコメントがつきました！',
 	        body: `${comment.body}`,
 	        icon: '/images/manifest/icon-192x192.png',
-	        click_action: `/question/${questionId}`
+	        click_action: `https://choice-share.com/question/${questionId}`
 	      }
 	    };
 
@@ -126,6 +134,8 @@ exports.sendFollowerNotification = functions.database.ref('/questions/{questionI
 	        }
 	      });
 	      return Promise.all(tokensToRemove);
+	    }).catch(response =>{
+	    	console.log('failed sending notification')
 	    })
     })
   })
