@@ -123,9 +123,10 @@
 
       #commentButton{
         color:var(--app-primary-color);
+        min-width: 40px;
       }
 
-      #comment-text-box{
+      #commentTextBox{
         -webkit-align-items:flex-end;
         align-items:flex-end;
       }
@@ -240,7 +241,7 @@
             <paper-button on-tap="loadAllComments">コメントを全て見る</paper-button>
           </div>
           <iron-collapse id="commentTextBox" class="flex-left-right">
-            <paper-textarea on-value-changed="textareaChanged" maxlength="255" on-focused-changed="commentFocus" id="commentBody" label="コメントを残しましょう"></paper-textarea>
+            <paper-textarea on-value-changed="textareaChanged" maxlength="128" on-focused-changed="commentFocus" id="commentBody" label="コメントを残しましょう"></paper-textarea>
             <paper-icon-button hidden$="[[!commentBodyLength]]" id="commentButton" on-tap="postComment" icon="my-icons:send"></paper-icon-button>
           </iron-collapse>
         </div>
