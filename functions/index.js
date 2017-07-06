@@ -108,7 +108,7 @@ exports.commentNotification = functions.database.ref('/questions/{questionId}/co
 	    // Notification details.
 	    const payload = {
 	      notification: {
-	        title: 'あなたの質問にコメントがつきました！',
+	        title: '質問にコメントがつきました！',
 	        body: `${comment.body}`,
 	        icon: '/images/manifest/icon-192x192.png',
 	        click_action: `https://choice-share.com/question/${questionId}`

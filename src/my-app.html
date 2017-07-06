@@ -11,6 +11,7 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
@@ -93,6 +94,11 @@
         color:#fff;
       }
 
+      paper-toast a{
+        color:#fff;
+        text-decoration:none;
+      }
+
       paper-toast{
         min-width:auto !important;
       }
@@ -136,9 +142,9 @@
     </firebase-document>
 
     <firebase-messaging
-      id="messaging"
       app-name="drink"
-      on-message="handleMessage">
+      id="messaging"
+      on-last-message-changed="handleMessage">
     </firebase-messaging>
 
     <app-location route="{{route}}"></app-location>
@@ -209,7 +215,7 @@
       <paper-icon-button on-tap="closeToast" icon="my-icons:close"></paper-icon-button>
     </paper-toast>
 
-    <paper-toast raised id="toast" text=""></paper-toast>
+    <paper-toast duration="0" raised id="toast" text=""></paper-toast>
 
   </template>
 
@@ -267,6 +273,20 @@
         return this.userPublic.userName
       }
 
+      handleMessage(){
+        console.log('handle message called')
+        console.log(this.$.messaging.lastMessage)
+        if(!this.$.messaging.lastMessage) return
+
+        const notification = this.$.messaging.lastMessage.notification
+        const notificationBody = notification.body
+        const notificationlink = notification.click_action
+        const toast = this.$.toast
+        toast.innerHTML = `<a href="`+notificationlink+`"><iron-icon icon="my-icons:comment"></iron-icon> `+notificationBody+`</a>`
+        toast.open()
+
+      }
+
       constructor() {
         super();
 
@@ -294,10 +314,6 @@
 
       closeToast(){
         this.$.offlineToast.close();
-      }
-
-      handleMessage(){
-
       }
 
       _pageChanged(page) {
