@@ -137,20 +137,17 @@
     </style>
 
     <firebase-document
-      app-name="drink"
       id="questionDocument"
       path="[[questionPath]]"
       data="{{question}}">
     </firebase-document>
 
     <firebase-document
-      app-name="drink"
       id="userPrivate"
       path="/users/private/[[user.uid]]">
     </firebase-document>
 
    <firebase-query
-      app-name="drink"
       id="commentQuery"
       path="[[questionPath]]/comments"
       limit-to-last="[[commentNum]]"
@@ -158,7 +155,6 @@
     </firebase-query>
 
     <firebase-auth 
-      app-name="drink"
       id="auth"
       online="{{online}}"
       user="{{user}}"

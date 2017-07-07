@@ -38,31 +38,6 @@ exports.sanitizeComment = functions.database
 	})
 
 
-// // notifying users for comments and stuff
-// exports.sanitizeComment = functions.database
-// 	.ref('/questions/{questionId}/comments/{commentId}')
-// 	.onWrite(event => {
-// 		const questionId = event.params.questionId
-// 		const commentId = event.params.commentId
-// 		const getSomethingPromise = admin.database().ref('/questions/' + questionId).once('value');
-
-// 	     return getSomethingPromise.then(results => {
-// 	        const question = results[0];
-
-//           Object.keys(question.comments).map(function(objectKey, index) {
-//           	//get the uid of the comment
-//           	var uid = question.comments[objectKey].Uid
-          	
-//           });
-
-//     	}
-
-// 	})
-
-
-
-
-
 
 
 
@@ -76,7 +51,6 @@ exports.commentNotification = functions.database.ref('/questions/{questionId}/co
 
   const questionId = event.params.questionId
   const comment = event.data.val()
-  console.log("comment is ", comment)
 
   // Get the meta data of this question
   const questionMetaPromise = admin.database().ref(`/questions/${questionId}/meta`).once('value');
@@ -107,13 +81,13 @@ exports.commentNotification = functions.database.ref('/questions/{questionId}/co
 
 	    // Notification details.
 	    const payload = {
-	      notification: {
+	      data: {
 	        title: '質問にコメントがつきました！',
 	        body: `${comment.body}`,
-	        icon: '/images/manifest/icon-192x192.png',
+	        tag: `${questionId}`,
 	        click_action: `https://choice-share.com/question/${questionId}`
 	      }
-	    };
+	    }
 
 	    // Listing all tokens.
 	    // const tokens = Object.keys(tokensSnapshot.val());

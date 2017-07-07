@@ -13,3 +13,73 @@ firebase.initializeApp({
 // Retrieve an instance of Firebase Messaging so that it can handle background
 // messages.
 const messaging = firebase.messaging();
+
+// If you would like to customize notifications that are received in the
+// background (Web app is closed or not in browser focus) then you should
+// implement this optional method.
+// [START background_handler]
+messaging.setBackgroundMessageHandler(function(payload) {
+  console.log('[firebase-messaging-sw.js] Received background message ', payload);
+  // Customize notification here
+  const notification = payload.data
+  const notificationTitle = notification.title;
+  const notificationOptions = {
+  	body: notification.body,
+  	data: {
+	  	click_action: notification.click_action
+  	},
+    icon: '/images/notification/icon.png',
+  	badge: '/images/notification/badge.png',
+  	tag: notification.tag,
+  	vibrate: [150,100,150,100,200]
+  }
+
+  return self.registration.showNotification(notificationTitle,
+      notificationOptions)
+})
+// [END background_handler]
+
+
+//perform action when the notification is clicked
+self.addEventListener('notificationclick', function(event) {
+  const clickedNotification = event.notification
+  const urlToOpen = clickedNotification.data.click_action
+  clickedNotification.close()
+
+  const promiseChain = clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true
+  })
+  .then((windowClients) => {
+    let matchingClient = null
+
+    for (let i = 0; i < windowClients.length; i++) {
+      const windowClient = windowClients[i];
+      if (windowClient.url === urlToOpen) {
+        matchingClient = windowClient
+        break
+      }
+    }
+
+    if (matchingClient) {
+      return matchingClient.focus();
+    } else {
+      return clients.openWindow(urlToOpen);
+    }
+  })
+
+  event.waitUntil(promiseChain)
+})
+
+
+
+
+
+
+
+
+
+
+
+
+

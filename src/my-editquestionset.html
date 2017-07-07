@@ -39,21 +39,18 @@
     </app-route>
 
     <firebase-auth 
-      app-name="drink"
       id="auth" 
       user="{{user}}" 
       on-error="handleError">
     </firebase-auth>
 
     <firebase-document
-      app-name="drink"
       id="questionSetDocument"
       path="/users/questionSets/[[user.uid]]/[[questionSetKey]]"
       data="{{questionSet}}">
     </firebase-document>
 
     <firebase-query
-      app-name="drink"
       path="/users/questionSets/[[user.uid]]/[[questionSetKey]]/questions"
       data="{{questions}}">
     </firebase-query>

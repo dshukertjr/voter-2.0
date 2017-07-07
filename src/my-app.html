@@ -111,7 +111,6 @@
       </style>
 
     <firebase-app 
-      name="drink"
       auth-domain="drink-f8aff.firebaseapp.com" 
       database-url="https://drink-f8aff.firebaseio.com" 
       api-key="AIzaSyBzOoSEui2_rJSxLTSoYWcNpP2bUcO9bpY"
@@ -120,7 +119,6 @@
     </firebase-app>
 
     <firebase-auth
-      app-name="drink"
       id="auth" 
       user="{{user}}"
       online="{{online}}"
@@ -128,21 +126,18 @@
     </firebase-auth>
 
     <firebase-document
-      app-name="drink"
       id="userPublic"
       path="/users/public/[[user.uid]]"
       data="{{userPublic}}">
     </firebase-document>
 
     <firebase-document
-      app-name="drink"
       id="userPrivate"
       path="/users/private/[[user.uid]]"
       data="{{userPrivate}}">
     </firebase-document>
 
     <firebase-messaging
-      app-name="drink"
       id="messaging"
       on-last-message-changed="handleMessage">
     </firebase-messaging>

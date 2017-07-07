@@ -105,14 +105,12 @@
     </style>
 
     <firebase-auth 
-      app-name="drink"
       id="auth" 
       user="{{user}}" 
       on-error="handleError">
     </firebase-auth>
 
    <firebase-query
-      app-name="drink"
       id="questionQuery"
       path="/questions"
       on-app-changed="elementLoaded"

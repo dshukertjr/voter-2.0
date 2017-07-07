@@ -25,7 +25,6 @@
     </style>
 
     <firebase-auth 
-      app-name="drink"
       app="{{firebase}}"
       id="auth" 
       user="{{user}}" 
@@ -33,14 +32,12 @@
     </firebase-auth>
 
     <firebase-document
-      app-name="drink"
       id="userPublic"
       path="/users/public/[[user.uid]]"
       data="{{userPublic}}">
     </firebase-document>
 
     <firebase-document
-      app-name="drink"
       id="userPrivate"
       path="/users/private/[[user.uid]]"
       data="{{userPrivate}}">

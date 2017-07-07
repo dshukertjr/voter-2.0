@@ -24,21 +24,18 @@
     </style>
 
     <firebase-auth 
-      app-name="drink"
       id="auth" 
       user="{{user}}" 
       on-error="handleError">
     </firebase-auth>
 
     <firebase-query
-      app-name="drink"
       id="query"
       path="/questions"
       limit-to-last="1">
     </firebase-query>
 
     <firebase-document
-      app-name="drink"
       id="userPrivate"
       path="/users/private/[[user.uid]]"
       data="{{userPrivate}}">
@@ -46,7 +43,6 @@
 
     <firebase-messaging
       id="messaging"
-      app-name="drink"
       token="{{token}}">
     </firebase-messaging>
 
