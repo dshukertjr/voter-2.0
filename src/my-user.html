@@ -25,9 +25,8 @@
     </style>
 
     <firebase-auth 
-      app="{{firebase}}"
-      id="auth" 
-      user="{{user}}" 
+      id="auth"
+      user="{{user}}"
       on-error="handleError">
     </firebase-auth>
 
@@ -48,10 +47,12 @@
     <div hidden$="[[user]]">
       
     </div>
+      <paper-button on-tap="anonymousLogin">anonymous</paper-button>
+      <paper-button on-tap="signout">ログアウトする</paper-button>
 
       <div hidden$="[[isUniqueUser]]">
-        <paper-input id="email" type="email" label="email"></paper-input>
-        <paper-input type="password" id="password" label="password"></paper-input>
+        <paper-input value="dshukertjr@gmail.com" id="email" type="email" label="email"></paper-input>
+        <paper-input value="a2764670A" type="password" id="password" label="password"></paper-input>
 
         <div class="buttons">
           <paper-button on-tap="login" class="highlightBtn" raised>ログイン</paper-button>
@@ -88,7 +89,6 @@
             type: Object,
             observer: 'setPageTitle'
           },
-          firebase: Object,
           userPublic: Object,
           userPrivate: Object,
           pageTitle: {
@@ -154,11 +154,14 @@
       }
 
       signup(){
-        const toast = this.$.toast;
-        const email = this.$.email.value;
-        const password = this.$.password.value;
-        const firebase = this.firebase;
-        const auth = firebase.auth();
+        const toast = this.$.toast
+        const email = this.$.email.value
+        const password = this.$.password.value
+        const firebase = window.firebase
+        console.log(this.$.auth.auth.currentUser)
+        const auth = firebase.auth()
+        console.log(this.user)
+
 
         if(!this.user){
           //simply create user from scratch
@@ -171,35 +174,39 @@
           });
         }else{
 
-          //if not signed in, sign in first
-          this.$.auth.signOut();
-          
-          this.$.auth.createUserWithEmailAndPassword(email, password)
-          .then(function(response){
-            toast.text = "ユーザー登録が完了しました";
-            toast.open();
-          }, function(error){
-            console.log(error);
-          });
+          if(this.user.isAnonymous){
+            //merge account
+            // console.log(firebase)
+            // console.log(firebase.auth())
+            // console.log(firebase.auth().EmailAuthProvider)
+            // console.log(firebase.auth)
+            // console.log(auth.currentUser)
+            // console.log(this.firebase)
+            // console.log(window.auth)
+            // console.log(window.firebase.auth())
+            // console.log(window.firebase.auth)
+            // return
 
 
+            var credential = firebase.auth.EmailAuthProvider.credential(email, password)
+            console.log(credential)
+            console.log(this.user.uid)
+            console.log(this.$.auth.auth)
 
-          // if(this.user.isAnonymous){
-          //   //merge account
-          //   console.log(firebase.auth());
-          //   console.log(firebase.auth);
-          //   console.log(auth.currentUser);
+            this.$.auth.auth.currentUser.link(credential).then(function(user) {
+              toast.text = "ユーザー登録が完了しました";
+              toast.open();
+            }, function(error) {
+              console.log("Error upgrading anonymous account", error);
+            });
+          }
 
-          //   var credential = firebase.auth.EmailAuthProvider.credential(email, password);
-          //   console.log(credential);
-          //   auth.currentUser.link(credential).then(function(user) {
-          //     toast.text = "ユーザー登録が完了しました";
-          //     toast.open();
-          //   }, function(error) {
-          //     console.log("Error upgrading anonymous account", error);
-          //   });
-          // }
+
         }
+      }
+
+      anonymousLogin(){
+        this.$.auth.signInAnonymously()
       }
 
       signout(){
@@ -220,33 +227,6 @@
           });
         }
       }
-
-       post() {
-        var question = {
-          "meta": {
-            "Uid": this.user.uid,
-            "question": this.$.question.value,
-            "choice1": this.$.choice1.value,
-            "choice2": this.$.choice2.value
-          }
-        }
-        // if(this.$.afterMessage.value != null) data["afterMessage"] = this.$.afterMessage.value;
-        if(this.$.choice3.value != null) question["meta"]["choice3"] = this.$.choice3.value;
-        if(this.$.choice4.value != null) question["meta"]["choice4"] = this.$.choice4.value;
-        if(this.$.choice5.value != null) question["meta"]["choice5"] = this.$.choice5.value;
-
-        var query = this.$.query;
-        if(!this.user){
-          //if not signed in, sign in first
-          this.$.auth.signInAnonymously()
-          .then(function(response){
-            query.ref.push(question);
-          });
-        }else{
-          this.$.query.ref.push(question);
-        }
-      }
-
     }
 
     window.customElements.define(MyUser.is, MyUser);

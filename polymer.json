@@ -14,6 +14,7 @@
   "extraDependencies": [
     "manifest.json",
     "firebase-messaging-sw.js",
+    "robots.txt",
     "bower_components/webcomponentsjs/*.js"
   ],
   "lint": {

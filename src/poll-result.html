@@ -44,8 +44,8 @@
         width:0%;
         background: var(--app-primary-color);
         background: #ccc;
-        -webkit-transition:width 0.2s;
-        transition:width 0.2s;
+        -webkit-transition:width 0.2s cubic-bezier(0.330, 0.010, 0.260, 1.290);
+        transition:width 0.2s cubic-bezier(0.330, 0.010, 0.260, 1.290);
         border-top-right-radius:5px;
         border-bottom-right-radius:5px;
         position:absolute;
@@ -360,12 +360,18 @@
       openCommentTextBox(){
         this.$.commentTextBox.toggle()
 
-        // // focusing does not work on iphone
-        // const commentBody = this.$.commentBody
-        // //I have to set timeout in order to focus to the textarea for some reason
-        // setTimeout(function(){
-        //   commentBody.focus()
-        // },201)
+        // if(this.$.commentTextBox.opened){
+        //   //smooth scroll to the comment element
+        //   window.scrollTo(0, this.$.commentTextBox.offsetTop)
+        // }
+
+        // focusing does not work on iphone
+        const commentBody = this.$.commentBody
+        commentBody.focus()
+        //I have to set timeout in order to focus to the textarea for some reason
+        setTimeout(function(){
+          commentBody.focus()
+        },201)
       }
 
       loadAllComments(){
