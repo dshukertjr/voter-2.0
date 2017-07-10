@@ -19,7 +19,6 @@ const messaging = firebase.messaging();
 // implement this optional method.
 // [START background_handler]
 messaging.setBackgroundMessageHandler(function(payload) {
-  console.log('[firebase-messaging-sw.js] Received background message ', payload);
   // Customize notification here
   const notification = payload.data
   const notificationTitle = notification.title;
@@ -31,6 +30,7 @@ messaging.setBackgroundMessageHandler(function(payload) {
     icon: '/images/notification/icon.png',
   	badge: '/images/notification/badge.png',
   	tag: notification.tag,
+    renotify: true,
   	vibrate: [150,100,150,100,200]
   }
 

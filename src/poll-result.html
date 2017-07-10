@@ -366,12 +366,14 @@
         // }
 
         // focusing does not work on iphone
+        if(this.$.commentTextBox.opened){
         const commentBody = this.$.commentBody
-        commentBody.focus()
-        //I have to set timeout in order to focus to the textarea for some reason
-        setTimeout(function(){
           commentBody.focus()
-        },201)
+          //I have to set timeout in order to focus to the textarea for some reason
+          setTimeout(function(){
+            commentBody.focus()
+          },201)
+        }
       }
 
       loadAllComments(){

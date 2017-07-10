@@ -47,12 +47,10 @@
     <div hidden$="[[user]]">
       
     </div>
-      <paper-button on-tap="anonymousLogin">anonymous</paper-button>
-      <paper-button on-tap="signout">ログアウトする</paper-button>
 
       <div hidden$="[[isUniqueUser]]">
-        <paper-input value="dshukertjr@gmail.com" id="email" type="email" label="email"></paper-input>
-        <paper-input value="a2764670A" type="password" id="password" label="password"></paper-input>
+        <paper-input id="email" type="email" label="email"></paper-input>
+        <paper-input type="password" id="password" label="password"></paper-input>
 
         <div class="buttons">
           <paper-button on-tap="login" class="highlightBtn" raised>ログイン</paper-button>
@@ -128,9 +126,9 @@
       }
 
       login(){
-        const toast = this.$.toast;
-        const email = this.$.email.value;
-        const password = this.$.password.value;
+        const toast = this.$.toast
+        const email = this.$.email.value
+        const password = this.$.password.value
 
         if(this.user){
           //if not signed in, sign in first
@@ -144,7 +142,6 @@
         .then(function(response){
           toast.text = "ログインが完了しました";
           toast.open();
-          email = null;
           password = null;
         }, function(error){
           toast.text = "ログインできませんでした";
@@ -158,9 +155,7 @@
         const email = this.$.email.value
         const password = this.$.password.value
         const firebase = window.firebase
-        console.log(this.$.auth.auth.currentUser)
-        const auth = firebase.auth()
-        console.log(this.user)
+        const thisElement = this
 
 
         if(!this.user){
@@ -170,35 +165,38 @@
             toast.text = "ユーザー登録が完了しました";
             toast.open();
           }, function(error){
-            console.log(error);
+            if(error.code == "auth/email-already-in-use"){
+              toast.text = "そのemailアドレスはすでに使われています"
+            }else{
+              toast.text = "エラーが起きました"
+            }
+            toast.open()
           });
         }else{
 
           if(this.user.isAnonymous){
-            //merge account
-            // console.log(firebase)
-            // console.log(firebase.auth())
-            // console.log(firebase.auth().EmailAuthProvider)
-            // console.log(firebase.auth)
-            // console.log(auth.currentUser)
-            // console.log(this.firebase)
-            // console.log(window.auth)
-            // console.log(window.firebase.auth())
-            // console.log(window.firebase.auth)
-            // return
-
 
             var credential = firebase.auth.EmailAuthProvider.credential(email, password)
-            console.log(credential)
-            console.log(this.user.uid)
-            console.log(this.$.auth.auth)
 
-            this.$.auth.auth.currentUser.link(credential).then(function(user) {
-              toast.text = "ユーザー登録が完了しました";
-              toast.open();
+            toast.text = "登録中..."
+            toast.open()
+            this.$.auth.auth.currentUser.linkWithCredential(credential).then(function(user) {
+              thisElement.$.auth.signOut()
+              thisElement.$.auth.signInWithEmailAndPassword(email, password).then(function(){
+                toast.close()
+               toast.text = "ユーザー登録が完了しました"
+               toast.open()
+               password = null
+             })
+  
             }, function(error) {
-              console.log("Error upgrading anonymous account", error);
-            });
+              if(error.code == "auth/email-already-in-use"){
+                toast.text = "そのemailアドレスはすでに使われています"
+              }else{
+                toast.text = "エラーが起きました"
+              }
+              toast.open()
+            })
           }
 
 
