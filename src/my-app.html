@@ -160,8 +160,8 @@
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
           <a name="questions" href="/">タイムライン</a>
           <a name="post" href="/post">質問投稿</a>
-          <a name="about" href="/about">Choiceについて</a>
-          <!-- <a name="user" href="/user">マイページ</a> -->
+          <!-- <a name="about" href="/about">Choiceについて</a> -->
+          <a name="user" href="/user">マイページ</a>
           <!-- <a name="user" href="/coorporate">アンケート作成</a> -->
         </iron-selector>
       </app-drawer>
@@ -214,7 +214,7 @@
       <paper-icon-button on-tap="closeToast" icon="my-icons:close"></paper-icon-button>
     </paper-toast>
 
-    <paper-toast raised id="toast" text=""></paper-toast>
+    <paper-toast always-on-top="true" raised id="toast" text=""></paper-toast>
 
   </template>
 

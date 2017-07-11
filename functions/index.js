@@ -7,7 +7,7 @@ admin.initializeApp(functions.config().firebase);
 //sanitizes posted questions
 exports.sanitizeQuestion = functions.database
 	.ref('/questions/{pushId}/meta')
-	.onWrite(event => {
+	.onCreate(event => {
 		var question = event.data.val()
 		if(question == null) {
 			return
@@ -42,7 +42,7 @@ exports.sanitizeComment = functions.database
 
 
 //sends notification when receiving comment to the question the user posted
-exports.commentNotification = functions.database.ref('/questions/{questionId}/comments/{commendId}').onWrite(event => {
+exports.commentNotification = functions.database.ref('/questions/{questionId}/comments/{commendId}').onCreate(event => {
 
   // If comment delete, exit the function
   if (!event.data.val()) {
