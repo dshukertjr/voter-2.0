@@ -12,7 +12,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Choice">
     <meta name="twitter:description" content="シンプルなアンケートアプリ！気になる質問を投稿したり、コメントで意見交換をしたりして遊ぼう！">
-    <meta name="twitter:image" content="images/choiceog.jpg">
+    <meta name="twitter:image" content="https://choice-share.com/images/choiceog.jpg">
     <meta property="og:url" content="https://choice-share.com">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Choice">
@@ -64,8 +64,8 @@
       // Load and register pre-caching Service Worker
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register(baseUrl + 'service-worker.js');
-        });
+          navigator.serviceWorker.register(baseUrl + 'service-worker.js')
+        })
       }
     </script>
 

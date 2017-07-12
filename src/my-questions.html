@@ -257,16 +257,18 @@
 
       _objectToArray(object){
         //converts object to array
-        if(object == null) return null;
+        if(object == null) return null
 
-        var returnArray = [];
+        var returnArray = []
 
         Object.keys(object).map(function(objectKey, index) {
-            var value = object[objectKey];
-            value.$key = objectKey;
-            returnArray.push(value);
-        });
-        return returnArray;
+            // var value = object[objectKey]
+            // value.$key = objectKey
+            var value = {}
+            value.$key = objectKey
+            returnArray.push(value)
+        })
+        return returnArray
       }
 
       _loadInitialQuestions(){
