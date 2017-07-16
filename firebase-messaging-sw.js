@@ -44,6 +44,7 @@ messaging.setBackgroundMessageHandler(function(payload) {
 self.addEventListener('notificationclick', function(event) {
   const clickedNotification = event.notification
   const urlToOpen = clickedNotification.data.click_action
+  console.log("urlToOpen", urlToOpen)
   clickedNotification.close()
 
   const promiseChain = clients.matchAll({
@@ -54,17 +55,26 @@ self.addEventListener('notificationclick', function(event) {
     let matchingClient = null
 
     for (let i = 0; i < windowClients.length; i++) {
-      const windowClient = windowClients[i];
+      const windowClient = windowClients[i]
+      console.log("windowClient.url", windowClient.url)
       if (windowClient.url === urlToOpen) {
+        //if the url is already opened, focus on the tab
         matchingClient = windowClient
         break
       }
+
+      // else{
+      //   //if there are no matching url, navigate to the url
+      //   matchingClient = windowClient
+      //   return windowClient.navigate(urlToOpen)
+      //   break
+      // }
     }
 
     if (matchingClient) {
-      return matchingClient.focus();
+      return matchingClient.focus()
     } else {
-      return clients.openWindow(urlToOpen);
+      return clients.openWindow(urlToOpen)
     }
   })
 

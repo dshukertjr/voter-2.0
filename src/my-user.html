@@ -5,6 +5,7 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="my-icons.html">
 <link rel="import" href="shared-styles.html">
 
@@ -49,20 +50,34 @@
     </div>
 
       <div hidden$="[[isUniqueUser]]">
+
         <paper-input id="email" type="email" label="email"></paper-input>
         <paper-input type="password" id="password" label="password"></paper-input>
+
 
         <div class="buttons">
           <paper-button on-tap="login" class="highlightBtn" raised>ログイン</paper-button>
           <paper-button on-tap="signup" raised>新規登録</paper-button>
         </div>
+
+        <div>
+          <p>なぜログインが必要なの？</p>
+          <paper-tooltip>ログインをすることで他の端末やブラウザのデータを消去後でもデータを引き継ぐことができます。また、ログインしても匿名性は守られます。</paper-tooltip>
+        </div>
+
       </div>
 
       <div hidden$="[[!isUniqueUser]]">
+
         <paper-input id="userName" value="[[userPublic.userName]]" type="text" label="User Name"></paper-input>
 
         <div class="buttons">
           <paper-button on-tap="saveUserData" class="highlightBtn" raised>保存</paper-button>
+        </div>
+
+        <div>
+          <p>なぜユーザー名を設定するの？</p>
+          <paper-tooltip>右上に表示するためです。ユーザー名を設定しても、それがあなたの回答やコメントに紐づくことはありません。</paper-tooltip>
         </div>
 
         <div class="buttons alignCenter">
@@ -116,7 +131,7 @@
           if(this.isUniqueUser){
             this.pageTitle = "User Settings"
           }else{
-            this.pageTitle = "Login"
+            this.pageTitle = "Login/Register"
           }
         }
       }
