@@ -228,10 +228,12 @@
           Object.keys(tempquestions).map(function(objectKey, index) {
             if(count >= 0){
               //if the question list contains question posted by this user, reload the question list
-              if(tempquestions[objectKey].meta.Uid === user.uid && loadOnce){
-               // thisElement.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId).limitToFirst(16).off('value', listen);
-                thisElement.loadNew();
-                loadOnce = false
+              if(user){
+                if(tempquestions[objectKey].meta.Uid === user.uid && loadOnce){
+                 // thisElement.$.questionQuery.ref.startAt(null, thisElement.newestQuestionId).limitToFirst(16).off('value', listen);
+                  thisElement.loadNew();
+                  loadOnce = false
+                }
               }
             }
             count ++;

@@ -39,6 +39,16 @@
         font-weight:300;
       }
 
+      #titleWrapper{
+        -webkit-align-items:flex-start;
+        align-items:flex-start;
+      }
+
+      #questionTime{
+        font-weight:200;
+        white-space:nowrap;
+      }
+
       .choiceBar{
         min-width:1px;
         width:0%;
@@ -162,8 +172,11 @@
     </firebase-auth>
 
     <div class="card question" id="card">
-      <h3 id="questionTitle" class="content">[[question.meta.question]]</h3>
-
+      <div id="titleWrapper" class="flex-left-right">
+        <h3 id="questionTitle" class="content">[[question.meta.question]]</h3>
+        <div hidden$="[[!howLongAgo]]" id="questionTime">[[howLongAgo]]</div>
+      </div>
+  
       <div id="answerButtons" class="choices-wrapper flex" hidden="true">
         <paper-button disabled$="[[!online]]" on-tap="answer" data-choice="1" class="choice" raised>[[question.meta.choice1]]</paper-button>
         <paper-button disabled$="[[!online]]" on-tap="answer" class="choice" data-choice="2" raised>[[question.meta.choice2]]</paper-button>
@@ -270,6 +283,10 @@
           comments: Object,
           hidden: Boolean,
           commentCount: String,
+          howLongAgo: {
+            type: String,
+            computed: '_calcHowLongAgo(question)'
+          },
           focused: Boolean,
           commentNum: {//number of comments shown
             type: Number,
@@ -303,14 +320,43 @@
       }
 
       _questionChanged(){
-        this._computeChoiceValue();
-        this._computePercent();
-        this._toggleAnswered();
-        this._inputTotal();
-        this._computeBarLength();
-        this._colorMychoice();
-        this.countComment();
-        this.toggleHost();
+        this._computeChoiceValue()
+        this._computePercent()
+        this._toggleAnswered()
+        this._inputTotal()
+        this._computeBarLength()
+        this._colorMychoice()
+        this.countComment()
+        this.toggleHost()
+      }
+
+      _calcHowLongAgo(){
+
+        if(this.question == null) return
+        if(this.question.meta == null) return
+        if(this.question.meta.time == null) return
+        const now = new Date().getTime()
+        console.log(now)
+        //difference in seconds
+        const difference = Math.floor(( now - this.question.meta.time) / 1000)
+        console.log(difference)
+        if(difference < 60){
+          return difference + "秒"
+        }else if(difference < 3600){
+          return Math.floor(difference / 60) + "分"
+        }else if(difference < 86400){
+          return Math.floor(difference / 3600) + "時間"
+        }else{
+          const questionDate = new Date(this.question.meta.time)
+          const nowDate = new Date()
+          if(questionDate.getMonth() == nowDate.getMonth()){
+            return (nowDate.getDate() - questionDate.getDate()) + "日"
+          }else if(questionDate.getFullYear() == nowDate.getFullYear()){
+            return questionDate.getMonth() + "/" + questionDate.getDate()
+          }else{
+            return questionDate.getFullYear + ", " + questionDate.getMonth() + "/" + questionDate.getDate()
+          }
+        }
       }
 
       toggleHost(){

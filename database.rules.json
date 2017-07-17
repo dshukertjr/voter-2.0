@@ -71,7 +71,7 @@
     "questions": {
       ".read": "true",
       "$qid": {
-        ".write": "!data.exists() && newData.child('meta').child('question').exists() && newData.child('meta').child('choice2').exists() && newData.child('meta').child('choice2').exists()",
+        ".write": "!data.exists() && newData.child('meta').child('question').exists() && newData.child('meta').child('choice1').exists() && newData.child('meta').child('choice2').exists()",
         "meta": {
           ".write": "auth != null",
           "question": {
@@ -94,6 +94,9 @@
           },
           "Uid": {
             ".validate": "newData.val() === auth.uid"
+          },
+          "time": {
+            ".validate": "newData.isNumber()"
           },
           "$other": {
             ".validate": "false"
