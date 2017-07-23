@@ -47,6 +47,7 @@
       #questionTime{
         font-weight:200;
         white-space:nowrap;
+        margin-left:8px;
       }
 
       .choiceBar{
@@ -336,10 +337,8 @@
         if(this.question.meta == null) return
         if(this.question.meta.time == null) return
         const now = new Date().getTime()
-        console.log(now)
         //difference in seconds
         const difference = Math.floor(( now - this.question.meta.time) / 1000)
-        console.log(difference)
         if(difference < 60){
           return difference + "秒"
         }else if(difference < 3600){
