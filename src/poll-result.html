@@ -351,9 +351,9 @@
           if(questionDate.getMonth() == nowDate.getMonth()){
             return (nowDate.getDate() - questionDate.getDate()) + "日"
           }else if(questionDate.getFullYear() == nowDate.getFullYear()){
-            return questionDate.getMonth() + "/" + questionDate.getDate()
+            return (questionDate.getMonth() + 1) + "/" + questionDate.getDate()
           }else{
-            return questionDate.getFullYear + ", " + questionDate.getMonth() + "/" + questionDate.getDate()
+            return questionDate.getFullYear + ", " + (questionDate.getMonth() + 1) + "/" + questionDate.getDate()
           }
         }
       }
