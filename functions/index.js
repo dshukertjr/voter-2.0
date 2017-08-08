@@ -4,6 +4,61 @@ const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
 
 
+
+//calculates the stats of questions
+exports.calcStats = functions.database
+	.ref('/answers/{questionId}/{userId}')
+	.onCreate(event => {
+
+	  const questionId = event.params.questionId
+
+	  // Get the meta data of this question
+	  const questionMetaPromise = admin.database().ref(`/answers/${questionId}/answers`).once('value')
+
+	  return Promise.all([questionMetaPromise]).then(results => {
+	    const answers = results[0].val()
+
+
+	    var stats = {
+	    	choice1: {
+	    		count: 0
+	    	},
+	    	choice2: {
+	    		count: 0
+	    	},
+	    	choice3: {
+	    		count: 0
+	    	},
+	    	choice4: {
+	    		count: 0
+	    	},
+	    	choice5: {
+	    		count: 0
+	    	}
+	    }
+
+		Object.keys(answers).map(function(objectKey, index) {
+			var choice = answers[objectKey].choice
+			stats["choice" + choice].count++
+		})
+
+		const total = stats.choice1.count + stats.choice2.count + stats.choice3.count + stats.choice4.count + stats.choice5.count
+
+		stats.choice1.percent = Math.round(stats.choice1.count / total)
+		stats.choice2.percent = Math.round(stats.choice2.count / total)
+		stats.choice3.percent = Math.round(stats.choice3.count / total)
+		stats.choice4.percent = Math.round(stats.choice4.count / total)
+		stats.choice5.percent = Math.round(stats.choice5.count / total)
+
+		return event.data.adminRef.root.child(`questions/${questionId}/stats`).set(stats)
+
+
+	  })
+
+
+
+	})
+
 //sanitizes posted questions
 exports.sanitizeQuestion = functions.database
 	.ref('/questions/{pushId}/meta')
@@ -22,6 +77,7 @@ exports.sanitizeQuestion = functions.database
 		else if(question.choice5) if(sanitize(question.choice5)) includes = true;
 		if(includes) return event.data.adminRef.parent.remove()
 	})
+
 
 //sanitizes posted comments
 exports.sanitizeComment = functions.database
@@ -53,21 +109,21 @@ exports.commentNotification = functions.database.ref('/questions/{questionId}/co
   const comment = event.data.val()
 
   // Get the meta data of this question
-  const questionMetaPromise = admin.database().ref(`/questions/${questionId}/meta`).once('value');
+  const questionMetaPromise = admin.database().ref(`/questions/${questionId}/meta`).once('value')
 
   return Promise.all([questionMetaPromise]).then(results => {
     const questionMeta = results[0].val()
 
     // Check if there are any device tokens.
-    if (!questionMeta) return console.log('questionMeta is empty');
-    if (!questionMeta.Uid) return console.log('Uid is empty');
+    if (!questionMeta) return console.log('questionMeta is empty')
+    if (!questionMeta.Uid) return console.log('Uid is empty')
     const Uid = questionMeta.Uid
 
     if(Uid === comment.Uid) return console.log('commented on their own question')
 
 
     // Listing all tokens.
-	const tokenPromise = admin.database().ref(`/users/private/${Uid}/token`).once('value');
+	const tokenPromise = admin.database().ref(`/users/private/${Uid}/token`).once('value')
 
     // Send notifications to all tokens.
 	return Promise.all([tokenPromise]).then(results => {
@@ -106,7 +162,7 @@ exports.commentNotification = functions.database.ref('/questions/{questionId}/co
 	            // tokensToRemove.push(tokensSnapshot.ref.child(tokens[index]).remove());
 	          }
 	        }
-	      });
+	      })
 	      return Promise.all(tokensToRemove);
 	    }).catch(response =>{
 	    	console.log('failed sending notification')
@@ -114,15 +170,6 @@ exports.commentNotification = functions.database.ref('/questions/{questionId}/co
     })
   })
 })
-
-
-
-
-
-
-
-
-
 
 
 

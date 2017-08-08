@@ -81,10 +81,6 @@
         -webkit-justify-content: space-between;
       }
 
-      .choiceValue{
-        display:none;
-      }
-
       .barContent>div{
         max-width:100%;
         padding:2px 4px 2px 4px;
@@ -197,7 +193,6 @@
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
             <div class="choiceLabel">[[question.meta.choice1]]</div>
-            <div class="choiceValue">0</div>
             <div class="choicePercent"><span class="percent">0</span>%</div>
           </div>
         </div>
@@ -206,7 +201,6 @@
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
             <div class="choiceLabel">[[question.meta.choice2]]</div>
-            <div class="choiceValue">0</div>
             <div class="choicePercent"><span class="percent">0</span>%</div>
           </div>
         </div>
@@ -215,7 +209,6 @@
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
             <div class="choiceLabel">[[question.meta.choice3]]</div>
-            <div class="choiceValue">0</div>
             <div class="choicePercent"><span class="percent">0</span>%</div>
           </div>
         </div>
@@ -224,7 +217,6 @@
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
             <div class="choiceLabel">[[question.meta.choice4]]</div>
-            <div class="choiceValue">0</div>
             <div class="choicePercent"><span class="percent">0</span>%</div>
           </div>
         </div>
@@ -233,7 +225,6 @@
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
             <div class="choiceLabel">[[question.meta.choice5]]</div>
-            <div class="choiceValue">0</div>
             <div class="choicePercent"><span class="percent">0</span>%</div>
           </div>
         </div>
@@ -335,7 +326,6 @@
       }
 
       _questionChanged(){
-        this._computeChoiceValue()
         this._computePercent()
         this._inputTotal()
         this._computeBarLength()
@@ -446,9 +436,9 @@
           return;
         }
         if(this.comments == null){
-          this.$.seeAllWrapper.hidden = true;
-          this.commentCount = null;
-          return;
+          this.$.seeAllWrapper.hidden = true
+          this.commentCount = null
+          return
         }
         if(this.comments.length > 0){
           var count = 0;
@@ -478,37 +468,23 @@
 
       //counts the number of votes for that choice
       _countChoice(choice){
-        if(this.question == null) return 0;
-
-        const question = this.question;
-
-        const choiceKey = 'choice' + choice;
-
-        //check if the question has answers at all
-        if(!question.hasOwnProperty('answers')) return 0;
-        else if(!question.hasOwnProperty('meta')) return 0;
-        else if(!question.meta.hasOwnProperty(choiceKey)) return 0;
-        else{
-          var count = 0;
-          Object.keys(question.answers).forEach(function (key) {
-            if(question.answers[key].choice == choice) count++;
-          });
-          return count;
-        }
+        if(this.question.stats == null) return 0
+        if(this.question.stats["choice" + choice] == null) return 0
+        return this.question.stats["choice" + choice].count
       }
 
-      //return the percent vote for that chioce
       _computeAnswerPercent(choice){
-        var total = this._countChoice(1) + this._countChoice(2) + this._countChoice(3) + this._countChoice(4) + this._countChoice(5);
-        if(total == null) return 0;
-        if(total == 0) return 0;
-        var percent = Math.round( this._countChoice(choice) * 100 / total );
-        return percent;
+        if(this.question.stats == null) return 0
+        if(this.question.stats["choice" + choice] == null) return 0
+        return this.question.stats["choice" + choice].percent
       }
 
       _inputTotal(){
-        const question = this.question;
-        var total = this._countChoice(1) + this._countChoice(2) + this._countChoice(3) + this._countChoice(4) + this._countChoice(5);
+        if(this.question.stats == null){
+          this.$.totalVotes.innerText = "0 votes";
+          return
+        }
+        var total = this._countChoice(1) + this._countChoice(2) + this._countChoice(3) + this._countChoice(4) + this._countChoice(5)
 
         this.$.totalVotes.innerText = total.toLocaleString() + " votes";
       }
@@ -517,21 +493,11 @@
       _computeBarLength(){
         //calculate the length of each choice
 
-        this.$.choice1.querySelector('.choiceBar').style.width = this._computeAnswerPercent(1) + "%";
-        this.$.choice2.querySelector('.choiceBar').style.width = this._computeAnswerPercent(2) + "%";
-        this.$.choice3.querySelector('.choiceBar').style.width = this._computeAnswerPercent(3) + "%";
-        this.$.choice4.querySelector('.choiceBar').style.width = this._computeAnswerPercent(4) + "%";
-        this.$.choice5.querySelector('.choiceBar').style.width = this._computeAnswerPercent(5) + "%";
-
-      }
-
-      //
-      _computeChoiceValue(){
-        this.$.choice1.querySelector('.barContent .choiceValue').innerText = this._countChoice(1);
-        this.$.choice2.querySelector('.barContent .choiceValue').innerText = this._countChoice(2);
-        this.$.choice3.querySelector('.barContent .choiceValue').innerText = this._countChoice(3);
-        this.$.choice4.querySelector('.barContent .choiceValue').innerText = this._countChoice(4);
-        this.$.choice5.querySelector('.barContent .choiceValue').innerText = this._countChoice(5);
+        this.$.choice1.querySelector('.choiceBar').style.width = this._computeAnswerPercent(1) + "%"
+        this.$.choice2.querySelector('.choiceBar').style.width = this._computeAnswerPercent(2) + "%"
+        this.$.choice3.querySelector('.choiceBar').style.width = this._computeAnswerPercent(3) + "%"
+        this.$.choice4.querySelector('.choiceBar').style.width = this._computeAnswerPercent(4) + "%"
+        this.$.choice5.querySelector('.choiceBar').style.width = this._computeAnswerPercent(5) + "%"
 
       }
 
@@ -542,39 +508,6 @@
         this.$.choice4.querySelector('.barContent .choicePercent .percent').innerText = this._computeAnswerPercent(4);
         this.$.choice5.querySelector('.barContent .choicePercent .percent').innerText = this._computeAnswerPercent(5);
       }
-
-      // _checkAnswered(){
-      //   // calculate if answered or not based on user private
-
-
-
-
-      //   if(!this.user) return false
-
-      //   if(this.questionKey == null && this.surveyUid === this.user.uid) return true
-
-      //   const uid = this.user.uid
-
-      //   //check if the question has answers at all
-      //   if(!this.question.hasOwnProperty('answers')) return false
-
-      //   //check if this user has answered it
-      //   if(this.question.answers.hasOwnProperty(uid)) return true
-
-      //   return false
-      // }
-
-      // _toggleAnswered(){
-      //   const haveAnswered = this._checkAnswered()
-
-      //   if(haveAnswered){
-      //     this.$.answerButtons.hidden = true
-      //     this.$.results.hidden = false
-      //   }else{
-      //     this.$.answerButtons.hidden = false
-      //     this.$.results.hidden = true
-      //   }
-      // }
 
       answer(e) {
         var choice = e.target.getAttribute('data-choice');
