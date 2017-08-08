@@ -13,7 +13,7 @@ exports.calcStats = functions.database
 	  const questionId = event.params.questionId
 
 	  // Get the meta data of this question
-	  const questionMetaPromise = admin.database().ref(`/answers/${questionId}/answers`).once('value')
+	  const questionMetaPromise = admin.database().ref(`/answers/${questionId}`).once('value')
 
 	  return Promise.all([questionMetaPromise]).then(results => {
 	    const answers = results[0].val()
@@ -44,20 +44,47 @@ exports.calcStats = functions.database
 
 		const total = stats.choice1.count + stats.choice2.count + stats.choice3.count + stats.choice4.count + stats.choice5.count
 
-		stats.choice1.percent = Math.round(stats.choice1.count / total)
-		stats.choice2.percent = Math.round(stats.choice2.count / total)
-		stats.choice3.percent = Math.round(stats.choice3.count / total)
-		stats.choice4.percent = Math.round(stats.choice4.count / total)
-		stats.choice5.percent = Math.round(stats.choice5.count / total)
+		console.log("total", total)
+		console.log("stats before", stats)
+
+		stats.choice1.percent = Math.round(stats.choice1.count * 100 / total)
+		stats.choice2.percent = Math.round(stats.choice2.count * 100 / total)
+		stats.choice3.percent = Math.round(stats.choice3.count * 100 / total)
+		stats.choice4.percent = Math.round(stats.choice4.count * 100 / total)
+		stats.choice5.percent = Math.round(stats.choice5.count * 100 / total)
+
+		console.log("stats", stats)
 
 		return event.data.adminRef.root.child(`questions/${questionId}/stats`).set(stats)
 
 
 	  })
 
-
-
 	})
+
+
+// //calculates the stats of questions
+// exports.calcStats = functions.database
+// 	.ref('/answers/{questionId}/{userId}')
+// 	.onCreate(event => {
+
+// 	  const questionId = event.params.questionId
+
+// 	  // Get the meta data of this question
+// 	  const questionMetaPromise = admin.database().ref(`/questions/${questionId}/answers`).once('value')
+
+// 	  return Promise.all([questionMetaPromise]).then(results => {
+// 	    const answers = results[0].val()
+
+// 		return event.data.adminRef.root.child(`answers/${questionId}`).set(answers)
+
+// 	  })
+
+// 	})
+
+
+
+
 
 //sanitizes posted questions
 exports.sanitizeQuestion = functions.database

@@ -12,7 +12,7 @@
           ".read": "$uid === auth.uid || root.child('users').child('coorporate').child(auth.uid).child('isCoorporate').val() == true",
           ".write": "$uid === auth.uid"
         }
-      },
+      }
       // "coorporate": {
       //   "$uid": {
       //     ".read": "true",
