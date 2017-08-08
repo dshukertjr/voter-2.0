@@ -280,10 +280,7 @@
           surveyUid: String,
           comments: Object,
           hidden: Boolean,
-          answered: {
-            type: Object,
-            observer: 'some'
-          },
+          answered: Object,
           commentCount: String,
           userPrivate: Object, 
           howLongAgo: {
@@ -313,10 +310,6 @@
           '_questionChanged(question.answers)',
           'countComment(question.comments)'
         ];
-      }
-
-      some(){
-        console.log(this.answered)
       }
 
       setQuestionTitle(){
@@ -376,11 +369,10 @@
       _colorMychoice(){
         //reset all the colors first
         if(this.$.results.querySelector('.myChoice')) this.$.results.querySelector('.myChoice').classList.remove('myChoice')
-        if(!this.user) return
+        if(this.answered == null) return
+        if(this.answered.choice == null) return
 
         const uid = this.user.uid
-        if(!this.question.answers) return
-        if(!this.question.answers[uid]) return
         const choice = this.answered.choice
         if(choice == 1) this.$.choice1.querySelector('.choiceBar').classList.add('myChoice')
         else if(choice == 2) this.$.choice2.querySelector('.choiceBar').classList.add('myChoice')
