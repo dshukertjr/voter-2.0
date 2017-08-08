@@ -50,6 +50,8 @@ exports.calcStats = functions.database
 		stats.choice4.percent = Math.round(stats.choice4.count * 100 / total)
 		stats.choice5.percent = Math.round(stats.choice5.count * 100 / total)
 
+		stats.total = total
+
 
 		return event.data.adminRef.root.child(`questions/${questionId}/stats`).set(stats)
 

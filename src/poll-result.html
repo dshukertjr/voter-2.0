@@ -307,8 +307,9 @@
 
       static get observers() {
         return [
-          '_questionChanged(question.answers)',
-          'countComment(question.comments)'
+          '_questionChanged(question.stats.total)',
+          'countComment(question.comments)',
+          '_colorMychoice(answered.choice)'
         ];
       }
 
@@ -322,7 +323,6 @@
         this._computePercent()
         this._inputTotal()
         this._computeBarLength()
-        this._colorMychoice()
         this.countComment()
         this.toggleHost()
       }
@@ -367,6 +367,7 @@
       }
 
       _colorMychoice(){
+        console.log("answered", this.answered)
         //reset all the colors first
         if(this.$.results.querySelector('.myChoice')) this.$.results.querySelector('.myChoice').classList.remove('myChoice')
         if(this.answered == null) return

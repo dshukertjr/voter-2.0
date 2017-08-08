@@ -1,7 +1,7 @@
 {
   "name": "Choice",
   "short_name": "Choice",
-  "start_url": "./?homescreen=1",
+  "start_url": "./",
   "display": "standalone",
   "theme_color": "#03A9F4",
   "background_color": "#fff",
