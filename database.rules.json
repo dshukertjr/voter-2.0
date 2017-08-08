@@ -13,60 +13,6 @@
           ".write": "$uid === auth.uid"
         }
       }
-      // "coorporate": {
-      //   "$uid": {
-      //     ".read": "true",
-      //     ".write": "false"
-      //   }
-      // },
-      // "questionSets": {
-      //   "$coorporateid": {
-      //     ".read": "$coorporateid === auth.uid",
-      //     ".write": "$coorporateid === auth.uid",
-      //     "$questionSetId": {
-      //       ".read": "true",
-      //       "meta": {
-      //         ".read": "true"
-      //       },
-      //       "questions": {
-      //         "$questionId": {
-      //           "meta": {
-      //             ".read": "true"
-      //           },
-      //           "answers": {
-      //             "$uid": {
-      //               ".write": "auth != null && $uid === auth.uid && ( data.child('Uid').val() === auth.uid || !data.exists() )",
-      //               "choice": {
-      //                 ".validate": "newData.isNumber()"
-      //               },
-      //               "$other": {
-      //                 ".validate": "false"
-      //               }
-      //             }
-      //           },
-      //           "comments": {
-      //             ".read": "auth != null",
-      //             "$cid": {
-      //               ".write": "auth != null",
-      //               "Uid": {
-      //                 ".validate": "newData.val() === auth.uid"
-      //               },
-      //               "body": {
-      //                 ".validate": "newData.isString()"
-      //               },
-      //               "$other": {
-      //                 ".validate": "false"
-      //               }
-      //             }
-      //           },
-      //           "$other": {
-      //             ".validate": "false"
-      //           }
-      //         }
-      //       }
-      //     }
-      //   }
-      // }
     },
     "questions": {
       ".read": "true",

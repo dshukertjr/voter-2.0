@@ -44,16 +44,12 @@ exports.calcStats = functions.database
 
 		const total = stats.choice1.count + stats.choice2.count + stats.choice3.count + stats.choice4.count + stats.choice5.count
 
-		console.log("total", total)
-		console.log("stats before", stats)
-
 		stats.choice1.percent = Math.round(stats.choice1.count * 100 / total)
 		stats.choice2.percent = Math.round(stats.choice2.count * 100 / total)
 		stats.choice3.percent = Math.round(stats.choice3.count * 100 / total)
 		stats.choice4.percent = Math.round(stats.choice4.count * 100 / total)
 		stats.choice5.percent = Math.round(stats.choice5.count * 100 / total)
 
-		console.log("stats", stats)
 
 		return event.data.adminRef.root.child(`questions/${questionId}/stats`).set(stats)
 

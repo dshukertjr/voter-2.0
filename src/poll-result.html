@@ -511,39 +511,17 @@
 
       answer(e) {
         var choice = e.target.getAttribute('data-choice');
-        choice = parseInt(choice);
-        var questionKey = this.questionKey;
-        const questionDocument = this.$.questionDocument;
-        const userPrivate = this.$.userPrivate;
-        const user = this.user;
+        choice = parseInt(choice)
+        var questionKey = this.questionKey
+        const questionDocument = this.$.questionDocument
+        const userPrivate = this.$.userPrivate
+        const user = this.user
 
         if(questionKey == null) return
 
         var answer = {
           "choice" : choice
-        };
-
-        if(!this.user){
-
-          const toast = this.$.toast;
-          toast.open();
-          //if not signed in, sign in first
-          this.$.auth.signInAnonymously()
-          .then(function(response){
-            toast.close();
-            var path = "/users/private/" + response.uid;
-            userPrivate.path = path;
-            questionDocument.ref.child('answers').child(response.uid).set(answer);
-            if(questionKey != null) userPrivate.ref.child('questions').child(questionKey).set(answer);
-          });
         }
-        else{
-          questionDocument.ref.child('answers').child(user.uid).set(answer);
-          if(questionKey != null) userPrivate.ref.child('questions').child(questionKey).set(answer);
-        }
-
-
-        //for backend stats calculation
 
         const answerRef = window.firebase.database().ref().child("answers").child(questionKey)
         if(!this.user){
