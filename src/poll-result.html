@@ -158,6 +158,12 @@
       path="/users/private/[[user.uid]]">
     </firebase-document>
 
+    <firebase-document
+      id="userAnsered"
+      path="/users/private/[[user.uid]]/questions/[[questionKey]]"
+      data="{{answered}}">
+    </firebase-document>
+
    <firebase-query
       id="commentQuery"
       path="[[questionPath]]/comments"
@@ -178,7 +184,7 @@
         <div hidden$="[[!howLongAgo]]" id="questionTime">[[howLongAgo]]</div>
       </div>
   
-      <div id="answerButtons" class="choices-wrapper flex" hidden="true">
+      <div id="answerButtons" class="choices-wrapper flex" hidden="[[answered.choice]]">
         <paper-button disabled$="[[!online]]" on-tap="answer" data-choice="1" class="choice" raised>[[question.meta.choice1]]</paper-button>
         <paper-button disabled$="[[!online]]" on-tap="answer" class="choice" data-choice="2" raised>[[question.meta.choice2]]</paper-button>
         <paper-button disabled$="[[!online]]" on-tap="answer" class="choice" data-choice="3" raised hidden$="[[!question.meta.choice3]]">[[question.meta.choice3]]</paper-button>
@@ -186,7 +192,7 @@
         <paper-button disabled$="[[!online]]" on-tap="answer" class="choice" data-choice="5" raised hidden$="[[!question.meta.choice5]]">[[question.meta.choice5]]</paper-button>
       </div>
 
-      <div id="results" hidden="true">
+      <div id="results" hidden="[[!answered.choice]]">
         <div class="choiceWrapper" id="choice1" hidden$="[[!question.meta.choice1]]">
           <div class="barContentPlaceholder choiceBar"></div>
           <div class="barContent">
@@ -283,7 +289,12 @@
           surveyUid: String,
           comments: Object,
           hidden: Boolean,
+          answered: {
+            type: Object,
+            observer: 'some'
+          },
           commentCount: String,
+          userPrivate: Object, 
           howLongAgo: {
             type: String,
             computed: '_calcHowLongAgo(question)'
@@ -313,6 +324,9 @@
         ];
       }
 
+      some(){
+        console.log(this.answered)
+      }
 
       setQuestionTitle(){
         if(this.question == null) return null;
@@ -323,7 +337,6 @@
       _questionChanged(){
         this._computeChoiceValue()
         this._computePercent()
-        this._toggleAnswered()
         this._inputTotal()
         this._computeBarLength()
         this._colorMychoice()
@@ -358,7 +371,7 @@
         }
       }
 
-      toggleHost(){
+      toggleHost(){//hides the question if it does not exist
         if(this.question == null) this.hidden = true
         else if(this.question.meta == null) this.hidden = true
         else if(this.question.meta.question == null) this.hidden = true
@@ -372,24 +385,24 @@
 
       _colorMychoice(){
         //reset all the colors first
-        if(this.$.results.querySelector('.myChoice')) this.$.results.querySelector('.myChoice').classList.remove('myChoice');
-        if(!this.user) return;
+        if(this.$.results.querySelector('.myChoice')) this.$.results.querySelector('.myChoice').classList.remove('myChoice')
+        if(!this.user) return
 
-        const uid = this.user.uid;
-        if(!this.question.answers) return;
-        if(!this.question.answers[uid]) return;
-        const choice = this.question.answers[uid].choice;
-        if(choice == 1) this.$.choice1.querySelector('.choiceBar').classList.add('myChoice');
-        if(choice == 2) this.$.choice2.querySelector('.choiceBar').classList.add('myChoice');
-        if(choice == 3) this.$.choice3.querySelector('.choiceBar').classList.add('myChoice');
-        if(choice == 4) this.$.choice4.querySelector('.choiceBar').classList.add('myChoice');
-        if(choice == 5) this.$.choice5.querySelector('.choiceBar').classList.add('myChoice');
+        const uid = this.user.uid
+        if(!this.question.answers) return
+        if(!this.question.answers[uid]) return
+        const choice = this.answered.choice
+        if(choice == 1) this.$.choice1.querySelector('.choiceBar').classList.add('myChoice')
+        else if(choice == 2) this.$.choice2.querySelector('.choiceBar').classList.add('myChoice')
+        else if(choice == 3) this.$.choice3.querySelector('.choiceBar').classList.add('myChoice')
+        else if(choice == 4) this.$.choice4.querySelector('.choiceBar').classList.add('myChoice')
+        else if(choice == 5) this.$.choice5.querySelector('.choiceBar').classList.add('myChoice')
       }
 
       postComment(){
-        const body = this.$.commentBody.value;
-        if(body == null) return;
-        const questionKey = this.questionKey;
+        const body = this.$.commentBody.value
+        if(body == null) return
+        const questionKey = this.questionKey
         const comment = {
           body: body,
           Uid: this.user.uid
@@ -397,9 +410,9 @@
         const userRef = {
           body: body
         }
-        this.$.questionDocument.ref.child('comments').push(comment);
-        this.$.userPrivate.ref.child('comments').child(questionKey).set(userRef);
-        this.$.commentBody.value = null;
+        this.$.questionDocument.ref.child('comments').push(comment)
+        this.$.userPrivate.ref.child('comments').child(questionKey).set(userRef)
+        this.$.commentBody.value = null
       }
 
       openCommentTextBox(){
@@ -530,35 +543,38 @@
         this.$.choice5.querySelector('.barContent .choicePercent .percent').innerText = this._computeAnswerPercent(5);
       }
 
-      _checkAnswered(){
-        if(!this.user) return false;
-
-        if(this.questionKey == null && this.surveyUid === this.user.uid) return true;
+      // _checkAnswered(){
+      //   // calculate if answered or not based on user private
 
 
-        const uid = this.user.uid;
 
 
-        //check if the question has answers at all
-        if(!this.question.hasOwnProperty('answers')) return false;
+      //   if(!this.user) return false
 
-        //check if this user has answered it
-        if(this.question.answers.hasOwnProperty(uid)) return true;
+      //   if(this.questionKey == null && this.surveyUid === this.user.uid) return true
 
-        return false;
-      }
+      //   const uid = this.user.uid
 
-      _toggleAnswered(){
-        const haveAnswered = this._checkAnswered();
+      //   //check if the question has answers at all
+      //   if(!this.question.hasOwnProperty('answers')) return false
 
-        if(haveAnswered){
-          this.$.answerButtons.hidden = true;
-          this.$.results.hidden = false;
-        }else{
-          this.$.answerButtons.hidden = false;
-          this.$.results.hidden = true;
-        }
-      }
+      //   //check if this user has answered it
+      //   if(this.question.answers.hasOwnProperty(uid)) return true
+
+      //   return false
+      // }
+
+      // _toggleAnswered(){
+      //   const haveAnswered = this._checkAnswered()
+
+      //   if(haveAnswered){
+      //     this.$.answerButtons.hidden = true
+      //     this.$.results.hidden = false
+      //   }else{
+      //     this.$.answerButtons.hidden = false
+      //     this.$.results.hidden = true
+      //   }
+      // }
 
       answer(e) {
         var choice = e.target.getAttribute('data-choice');
@@ -567,6 +583,8 @@
         const questionDocument = this.$.questionDocument;
         const userPrivate = this.$.userPrivate;
         const user = this.user;
+
+        if(questionKey == null) return
 
         var answer = {
           "choice" : choice
@@ -590,6 +608,28 @@
           questionDocument.ref.child('answers').child(user.uid).set(answer);
           if(questionKey != null) userPrivate.ref.child('questions').child(questionKey).set(answer);
         }
+
+
+        //for backend stats calculation
+
+        const answerRef = window.firebase.database().ref().child("answers").child(questionKey)
+        if(!this.user){
+
+          //if not signed in, sign in first
+          this.$.auth.signInAnonymously()
+          .then(function(response){
+            var uid = response.uid
+            var path = "/users/private/" + uid
+            userPrivate.path = path
+            answerRef.child(uid).set(answer)
+            userPrivate.ref.child('questions').child(questionKey).set(answer)
+          })
+        }
+        else{
+            answerRef.child(user.uid).set(answer)
+            userPrivate.ref.child('questions').child(questionKey).set(answer)
+        }
+
       }
 
       _computeSort(a, b) {
@@ -602,7 +642,6 @@
 
 
     }
-
 
     window.customElements.define(PollResult.is, PollResult);
   </script>
