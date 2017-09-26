@@ -142,7 +142,6 @@
           this.$.auth.signInAnonymously()
           .then(function(response){
             question["meta"]["Uid"] = response.uid
-            console.log(question)
             query.ref.push(question)
             thisElement.askNotificationPermission()
           })
